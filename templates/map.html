@@ -1036,14 +1036,19 @@
     trackingTargets.forEach((tgt, id) => {
       const cur = pool.find(t => t[idKey] === id);
       if (!cur) {
-        // Left the feed box entirely
-        _removeTrackTarget(id);
+        if (type === 'adsb') {
+          // Aircraft left the 30mi box — keep box at last known position, wait for landing
+          tgt.stale = true;
+        } else {
+          // Marine vessel — drop when it leaves the box
+          _removeTrackTarget(id);
+        }
       } else if (type === 'adsb' && !(cur.alt_ft > 0)) {
         // Aircraft on the ground — stop tracking
         _removeTrackTarget(id);
       } else {
-        // Still airborne/active — update position
-        tgt.lat = cur.lat; tgt.lon = cur.lon;
+        // Active — update position
+        tgt.lat = cur.lat; tgt.lon = cur.lon; tgt.stale = false;
         _updateTrackRect(id, cur.lat, cur.lon);
       }
     });
