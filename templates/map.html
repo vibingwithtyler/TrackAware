@@ -267,6 +267,55 @@
     .tc-lock:hover { border-color: #4caf50; color: #4caf50; }
     .tc-lock.locked { border-color: #f44336; color: #f44336; }
     .tc-lock.locked:hover { border-color: #f44336; color: #f44336; }
+
+    /* ── Tracking conditions section ── */
+    .trk-row {
+      display: flex; align-items: center; gap: 6px;
+      padding: 3px 0;
+    }
+    .trk-label {
+      font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #aaa; min-width: 52px; flex-shrink: 0;
+    }
+    .trk-check {
+      font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #aaa; display: flex; align-items: center; gap: 4px;
+      cursor: pointer; min-width: 52px; flex-shrink: 0;
+    }
+    input[type="checkbox"] { accent-color: #ffd700; cursor: pointer; }
+    .trk-input {
+      background: #111; border: 1px solid #333; color: #ccc;
+      font-family: 'Courier New', monospace; font-size: 0.6rem;
+      padding: 3px 5px; outline: none; width: 54px;
+      transition: border-color 0.15s;
+    }
+    .trk-input:focus { border-color: #666; }
+    .trk-input.wide { width: 100%; flex: 1; }
+    .trk-sep { font-size: 0.6rem; color: #666; }
+    .trk-range { display: none; align-items: center; gap: 4px; }
+    .trk-range.visible { display: flex; }
+    .trk-select {
+      flex: 1; background: #111; border: 1px solid #333; color: #ccc;
+      font-family: 'Courier New', monospace; font-size: 0.6rem;
+      padding: 3px 5px; outline: none; cursor: pointer;
+    }
+    .trk-select:focus { border-color: #666; }
+    .trk-arm {
+      width: 100%; margin-top: 10px;
+      background: none; border: 1px solid #555; color: #aaa;
+      font-family: 'Courier New', monospace; font-size: 0.58rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 6px 0; cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .trk-arm:hover              { border-color: #ffd700; color: #ffd700; }
+    .trk-arm.armed              { border-color: #ffd700; color: #ffd700; background: rgba(255,215,0,0.06); }
+    .trk-status {
+      font-size: 0.5rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: #555; margin-top: 6px; text-align: center; line-height: 1.4;
+    }
+    .trk-status.searching { color: #888; }
+    .trk-status.tracking  { color: #ffd700; }
   </style>
 </head>
 <body>
@@ -356,6 +405,53 @@
       <div class="fp-mode-badge" id="mode-badge">Globe</div>
     </div>
 
+    <div class="fp-section">
+      <div class="fp-title">Tracking Conditions</div>
+
+      <div class="trk-row">
+        <span class="trk-label">Target</span>
+        <select id="trk-type" class="trk-select" onchange="onTrkTypeChange()">
+          <option value="adsb">Air Traffic</option>
+          <option value="marine">Ocean Traffic</option>
+        </select>
+      </div>
+
+      <div class="trk-row">
+        <label class="trk-check"><input type="checkbox" id="trk-spd-en" onchange="onTrkCheckChange('spd')"> Speed</label>
+        <div class="trk-range" id="trk-spd-range">
+          <input type="number" id="trk-spd-min" class="trk-input" placeholder="min kt" min="0">
+          <span class="trk-sep">–</span>
+          <input type="number" id="trk-spd-max" class="trk-input" placeholder="max kt" min="0">
+        </div>
+      </div>
+
+      <div class="trk-row" id="trk-hdg-row">
+        <label class="trk-check"><input type="checkbox" id="trk-hdg-en" onchange="onTrkCheckChange('hdg')"> Heading</label>
+        <div class="trk-range" id="trk-hdg-range">
+          <input type="number" id="trk-hdg-min" class="trk-input" placeholder="min °" min="0" max="360">
+          <span class="trk-sep">–</span>
+          <input type="number" id="trk-hdg-max" class="trk-input" placeholder="max °" min="0" max="360">
+        </div>
+      </div>
+
+      <div class="trk-row" id="trk-alt-row">
+        <label class="trk-check"><input type="checkbox" id="trk-alt-en" onchange="onTrkCheckChange('alt')"> Altitude</label>
+        <div class="trk-range" id="trk-alt-range">
+          <input type="number" id="trk-alt-min" class="trk-input" placeholder="min ft" step="500">
+          <span class="trk-sep">–</span>
+          <input type="number" id="trk-alt-max" class="trk-input" placeholder="max ft" step="500">
+        </div>
+      </div>
+
+      <div class="trk-row">
+        <span class="trk-label" id="trk-prefix-label">Callsign</span>
+        <input type="text" id="trk-prefix" class="trk-input wide" placeholder="e.g. UAL, N" maxlength="12">
+      </div>
+
+      <button class="trk-arm" id="trk-arm" onclick="toggleArming()">Arm Tracking</button>
+      <div class="trk-status" id="trk-status">Disarmed</div>
+    </div>
+
   </div>
 
 </div>
@@ -364,6 +460,7 @@
   // ── Constants ──────────────────────────────────────────────────────────────
   const STORAGE_KEY  = 'trackvision_camera_coords';
   const BOX_KM       = 48.28;  // 30 miles
+  const TRACK_KM     = 5;      // tracking box size
   const GLENDALE     = { lat: 34.1425, lon: -118.2551 };
   const GLOBE_TO_MAP = 14000;
   const MAP_TO_GLOBE = 7;
@@ -376,6 +473,11 @@
   let marineEnabled  = false;
   let _cardType      = null;   // 'adsb' | 'marine'
   let _cardId        = null;   // icao24 or mmsi
+
+  let trackingArmed  = false;
+  let trackingTarget = null;   // {type, id, lat, lon}
+  let trackRect      = null;   // Leaflet rectangle
+  let trackGeoBox    = null;   // GeoJSON for canvas draw
 
   let adsbFlights    = [];
   let adsbFollowIcao = null;
@@ -476,6 +578,13 @@
       ctx.closePath(); ctx.fillStyle = color; ctx.fill(); ctx.restore();
       if (v.name) { ctx.font = '9px Courier New'; ctx.fillStyle = color; ctx.fillText(v.name, vx + 8, vy + 3); }
     });
+
+    // Tracking box (5km × 5km, yellow)
+    if (trackGeoBox) {
+      ctx.beginPath(); path(trackGeoBox);
+      ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = 'rgba(255,215,0,0.06)'; ctx.fill();
+    }
 
     // Selection ring
     if (_cardId) {
@@ -755,6 +864,7 @@
       } else if (!marineFollowMmsi) {
         lbl.textContent = '';
       }
+      checkTracking();
     } catch (_) {}
   }
 
@@ -807,6 +917,7 @@
       } else if (!adsbFollowIcao) {
         lbl.textContent = '';
       }
+      checkTracking();
     } catch (_) {}
   }
 
@@ -871,6 +982,135 @@
   updateDisplay(currentCoords.lat, currentCoords.lon);
   window.addEventListener('resize', resizeGlobe);
   resizeGlobe();
+
+  // ── Tracking conditions ───────────────────────────────────────────────────
+  function trackingBoxGeoJSON(lat, lon) {
+    const hLat = kmToDegLat(TRACK_KM / 2);
+    const hLon = kmToDegLon(TRACK_KM / 2, lat);
+    return {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[
+          [lon - hLon, lat - hLat], [lon + hLon, lat - hLat],
+          [lon + hLon, lat + hLat], [lon - hLon, lat + hLat],
+          [lon - hLon, lat - hLat],
+        ]],
+      },
+    };
+  }
+
+  function matchesTracking(item, type) {
+    if (document.getElementById('trk-spd-en').checked) {
+      const spd = item.speed_kt, smin = parseFloat(document.getElementById('trk-spd-min').value), smax = parseFloat(document.getElementById('trk-spd-max').value);
+      if (spd != null && !isNaN(smin) && spd < smin) return false;
+      if (spd != null && !isNaN(smax) && spd > smax) return false;
+    }
+    if (type === 'adsb') {
+      if (document.getElementById('trk-hdg-en').checked) {
+        const hdg = item.heading, hmin = parseFloat(document.getElementById('trk-hdg-min').value), hmax = parseFloat(document.getElementById('trk-hdg-max').value);
+        if (hdg != null && !isNaN(hmin) && hdg < hmin) return false;
+        if (hdg != null && !isNaN(hmax) && hdg > hmax) return false;
+      }
+      if (document.getElementById('trk-alt-en').checked) {
+        const alt = item.alt_ft, amin = parseFloat(document.getElementById('trk-alt-min').value), amax = parseFloat(document.getElementById('trk-alt-max').value);
+        if (alt != null && !isNaN(amin) && alt < amin) return false;
+        if (alt != null && !isNaN(amax) && alt > amax) return false;
+      }
+      const pfx = document.getElementById('trk-prefix').value.trim().toUpperCase();
+      if (pfx && !(item.callsign || '').toUpperCase().startsWith(pfx)) return false;
+    } else {
+      const pfx = document.getElementById('trk-prefix').value.trim().toUpperCase();
+      if (pfx && !(item.name || '').toUpperCase().startsWith(pfx)) return false;
+    }
+    return true;
+  }
+
+  function checkTracking() {
+    if (!trackingArmed) return;
+    const type  = document.getElementById('trk-type').value;
+    const pool  = type === 'adsb' ? adsbFlights : marineVessels;
+    const idKey = type === 'adsb' ? 'icao24' : 'mmsi';
+
+    // Keep tracking existing target if it still matches
+    if (trackingTarget && trackingTarget.type === type) {
+      const cur = pool.find(t => t[idKey] === trackingTarget.id);
+      if (cur && matchesTracking(cur, type)) {
+        trackingTarget = { type, id: cur[idKey], lat: cur.lat, lon: cur.lon };
+        _updateTrackBox();
+        return;
+      }
+      // Lost or no longer matches — clear and search below
+      trackingTarget = null;
+      _clearTrackBox();
+      _setTrackStatus('Lost — searching...', 'searching');
+    }
+
+    // Find a new match
+    const match = pool.find(t => matchesTracking(t, type));
+    if (match) {
+      trackingTarget = { type, id: match[idKey], lat: match.lat, lon: match.lon };
+      _updateTrackBox();
+      const label = type === 'adsb' ? (match.callsign || match.icao24) : (match.name || match.mmsi);
+      _setTrackStatus(`Tracking: ${label}`, 'tracking');
+    } else if (!trackingTarget) {
+      _setTrackStatus('Searching...', 'searching');
+    }
+  }
+
+  function _updateTrackBox() {
+    const { lat, lon } = trackingTarget;
+    trackGeoBox = trackingBoxGeoJSON(lat, lon);
+    const hLat  = kmToDegLat(TRACK_KM / 2), hLon = kmToDegLon(TRACK_KM / 2, lat);
+    const bounds = [[lat - hLat, lon - hLon], [lat + hLat, lon + hLon]];
+    const style  = { color: '#ffd700', weight: 2, fillColor: '#ffd700', fillOpacity: 0.06, interactive: false };
+    if (trackRect) trackRect.setBounds(bounds);
+    else           trackRect = L.rectangle(bounds, style).addTo(leafMap);
+    if (mode === 'globe') draw();
+  }
+
+  function _clearTrackBox() {
+    trackGeoBox = null;
+    if (trackRect) { leafMap.removeLayer(trackRect); trackRect = null; }
+    if (mode === 'globe') draw();
+  }
+
+  function _setTrackStatus(msg, cls = '') {
+    const el = document.getElementById('trk-status');
+    el.textContent = msg;
+    el.className = 'trk-status' + (cls ? ' ' + cls : '');
+  }
+
+  function toggleArming() {
+    trackingArmed = !trackingArmed;
+    const btn = document.getElementById('trk-arm');
+    if (trackingArmed) {
+      btn.textContent = 'Disarm';
+      btn.classList.add('armed');
+      _setTrackStatus('Searching...', 'searching');
+      checkTracking();
+    } else {
+      btn.textContent = 'Arm Tracking';
+      btn.classList.remove('armed');
+      trackingTarget = null;
+      _clearTrackBox();
+      _setTrackStatus('Disarmed');
+    }
+  }
+
+  function onTrkTypeChange() {
+    const isAir = document.getElementById('trk-type').value === 'adsb';
+    document.getElementById('trk-hdg-row').style.display = isAir ? '' : 'none';
+    document.getElementById('trk-alt-row').style.display = isAir ? '' : 'none';
+    document.getElementById('trk-prefix-label').textContent = isAir ? 'Callsign' : 'Name';
+    document.getElementById('trk-prefix').placeholder = isAir ? 'e.g. UAL, N' : 'e.g. MAERSK';
+    // Reset if armed — new type means start fresh
+    if (trackingArmed) { trackingTarget = null; _clearTrackBox(); _setTrackStatus('Searching...', 'searching'); checkTracking(); }
+  }
+
+  function onTrkCheckChange(key) {
+    document.getElementById(`trk-${key}-range`).classList.toggle('visible', document.getElementById(`trk-${key}-en`).checked);
+  }
 
   // ── Target info card ─────────────────────────────────────────────────────
   function _refreshMarker(type, id) {
