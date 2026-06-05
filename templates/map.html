@@ -211,6 +211,62 @@
       color: #222; border: 1px solid #1a1a1a; padding: 2px 6px;
       display: inline-block; margin-top: 5px;
     }
+
+    /* ── Target info card ── */
+    .target-card {
+      position: absolute; bottom: 20px; left: 12px;
+      z-index: 1000; width: 220px;
+      background: rgba(10,10,10,0.95);
+      border: 1px solid #2a2a2a;
+      display: none; flex-direction: column;
+    }
+    .target-card.visible { display: flex; }
+
+    .tc-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; border-bottom: 1px solid #1a1a1a;
+    }
+    .tc-badge {
+      font-size: 0.48rem; letter-spacing: 0.2em; text-transform: uppercase;
+      padding: 2px 6px; border: 1px solid; flex-shrink: 0;
+    }
+    .tc-badge.adsb   { color: #00bcd4; border-color: #00bcd4; }
+    .tc-badge.marine { color: #ff9800; border-color: #ff9800; }
+    .tc-badge.locked { color: #4caf50; border-color: #4caf50; }
+
+    .tc-id {
+      flex: 1; font-size: 0.65rem; letter-spacing: 0.06em; color: #aaa;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .tc-close {
+      background: none; border: none; color: #333; font-size: 0.9rem;
+      cursor: pointer; line-height: 1; padding: 0 2px; flex-shrink: 0;
+    }
+    .tc-close:hover { color: #888; }
+
+    .tc-fields {
+      padding: 8px 10px; display: flex; flex-direction: column; gap: 5px;
+    }
+    .tc-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .tc-label {
+      font-size: 0.5rem; letter-spacing: 0.15em; text-transform: uppercase; color: #333;
+    }
+    .tc-value { font-size: 0.65rem; color: #888; letter-spacing: 0.04em; }
+    .tc-value.hi { color: #ccc; }
+
+    .tc-lock {
+      margin: 4px 10px 10px;
+      background: none; border: 1px solid #2a2a2a; color: #555;
+      font-family: 'Courier New', monospace; font-size: 0.58rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 5px 0; cursor: pointer; width: calc(100% - 20px);
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .tc-lock:hover { border-color: #4caf50; color: #4caf50; }
+    .tc-lock.locked { border-color: #f44336; color: #f44336; }
+    .tc-lock.locked:hover { border-color: #f44336; color: #f44336; }
   </style>
 </head>
 <body>
@@ -246,6 +302,17 @@
   <!-- Release buttons -->
   <button id="map-release-btn"        class="release-float" onclick="mapReleaseFollow()">⊗ Release Target</button>
   <button id="map-marine-release-btn" class="release-float" onclick="mapMarineReleaseFollow()">⊗ Release Target</button>
+
+  <!-- Target info card -->
+  <div class="target-card" id="target-card">
+    <div class="tc-header">
+      <span class="tc-badge" id="tc-badge">—</span>
+      <span class="tc-id"   id="tc-id">—</span>
+      <button class="tc-close" onclick="closeTargetCard()">×</button>
+    </div>
+    <div class="tc-fields" id="tc-fields"></div>
+    <button class="tc-lock" id="tc-lock" onclick="lockFromCard()">⊕ Lock Target</button>
+  </div>
 
   <!-- Feed overlay panel -->
   <div class="feed-panel">
@@ -307,6 +374,8 @@
   let globeAnimating = false;
   let adsbEnabled    = false;
   let marineEnabled  = false;
+  let _cardType      = null;   // 'adsb' | 'marine'
+  let _cardId        = null;   // icao24 or mmsi
 
   let adsbFlights    = [];
   let adsbFollowIcao = null;
@@ -438,6 +507,28 @@
     draw();
   });
   window.addEventListener('mouseup', () => { dragging = false; canvas.style.cursor = 'grab'; });
+
+  // Globe click — hit-test markers, open info card
+  canvas.addEventListener('click', e => {
+    if (dragging) return;
+    const r  = canvas.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const HIT = 10;
+
+    for (const f of adsbFlights) {
+      const p = projection([f.lon, f.lat]);
+      if (p && Math.hypot(p[0] - mx, p[1] - my) < HIT) {
+        showTargetCard('adsb', f.icao24); return;
+      }
+    }
+    for (const v of marineVessels) {
+      const p = projection([v.lon, v.lat]);
+      if (p && Math.hypot(p[0] - mx, p[1] - my) < HIT) {
+        showTargetCard('marine', v.mmsi); return;
+      }
+    }
+    closeTargetCard();
+  });
 
   canvas.addEventListener('wheel', e => {
     e.preventDefault();
@@ -607,7 +698,11 @@
     adsbFlights.forEach(f => {
       const icon = makeFlightIcon(f.heading, f.icao24 === adsbFollowIcao);
       if (flightMarkers.has(f.icao24)) flightMarkers.get(f.icao24).setLatLng([f.lat, f.lon]).setIcon(icon);
-      else flightMarkers.set(f.icao24, L.marker([f.lat, f.lon], { icon, interactive: false }).addTo(flightLayer));
+      else {
+        const mk = L.marker([f.lat, f.lon], { icon }).addTo(flightLayer);
+        mk.on('click', () => showTargetCard('adsb', f.icao24));
+        flightMarkers.set(f.icao24, mk);
+      }
     });
   }
 
@@ -655,7 +750,11 @@
       const hdg  = v.heading != null ? v.heading : v.cog;
       const icon = makeVesselIcon(hdg, v.mmsi === marineFollowMmsi);
       if (vesselMarkers.has(v.mmsi)) vesselMarkers.get(v.mmsi).setLatLng([v.lat, v.lon]).setIcon(icon);
-      else vesselMarkers.set(v.mmsi, L.marker([v.lat, v.lon], { icon, interactive: false }).addTo(vesselLayer));
+      else {
+        const mk = L.marker([v.lat, v.lon], { icon }).addTo(vesselLayer);
+        mk.on('click', () => showTargetCard('marine', v.mmsi));
+        vesselMarkers.set(v.mmsi, mk);
+      }
     });
   }
 
@@ -756,6 +855,98 @@
   updateDisplay(currentCoords.lat, currentCoords.lon);
   window.addEventListener('resize', resizeGlobe);
   resizeGlobe();
+
+  // ── Target info card ─────────────────────────────────────────────────────
+  function showTargetCard(type, id) {
+    _cardType = type; _cardId = id;
+
+    const card   = document.getElementById('target-card');
+    const badge  = document.getElementById('tc-badge');
+    const idEl   = document.getElementById('tc-id');
+    const fields = document.getElementById('tc-fields');
+    const lockBtn = document.getElementById('tc-lock');
+
+    if (type === 'adsb') {
+      const f = adsbFlights.find(f => f.icao24 === id);
+      if (!f) return;
+      const isLocked = f.icao24 === adsbFollowIcao;
+      badge.textContent = isLocked ? 'LOCKED' : 'FLIGHT';
+      badge.className   = 'tc-badge ' + (isLocked ? 'locked' : 'adsb');
+      idEl.textContent  = f.callsign || f.icao24;
+      fields.innerHTML  = row('ICAO',     f.icao24,      true)
+                        + row('Callsign', f.callsign || '—')
+                        + row('Type',     f.type     || '—')
+                        + row('Altitude', f.alt_ft > 0 ? f.alt_ft.toLocaleString() + ' ft' : 'GND')
+                        + row('Heading',  f.heading  != null ? Math.round(f.heading)  + '°' : '—')
+                        + row('Speed',    f.speed_kt != null ? Math.round(f.speed_kt) + ' kt' : '—');
+      lockBtn.textContent = isLocked ? '⊗ Release Target' : '⊕ Lock Target';
+      lockBtn.className   = 'tc-lock' + (isLocked ? ' locked' : '');
+    } else {
+      const v = marineVessels.find(v => v.mmsi === id);
+      if (!v) return;
+      const isLocked = v.mmsi === marineFollowMmsi;
+      badge.textContent = isLocked ? 'LOCKED' : 'VESSEL';
+      badge.className   = 'tc-badge ' + (isLocked ? 'locked' : 'marine');
+      idEl.textContent  = v.name || v.mmsi;
+      const hdg = v.heading != null ? Math.round(v.heading) + '°'
+                : v.cog    != null ? Math.round(v.cog)     + '° (COG)' : '—';
+      fields.innerHTML  = row('MMSI',    v.mmsi,           true)
+                        + row('Name',    v.name  || '—')
+                        + row('Speed',   v.speed_kt != null ? v.speed_kt.toFixed(1) + ' kt' : '—')
+                        + row('Heading', hdg)
+                        + row('Status',  _navStatus(v.status));
+      lockBtn.textContent = isLocked ? '⊗ Release Target' : '⊕ Lock Target';
+      lockBtn.className   = 'tc-lock' + (isLocked ? ' locked' : '');
+    }
+
+    card.classList.add('visible');
+  }
+
+  function row(label, value, hi = false) {
+    return `<div class="tc-row"><span class="tc-label">${label}</span><span class="tc-value${hi ? ' hi' : ''}">${value}</span></div>`;
+  }
+
+  function _navStatus(code) {
+    const s = ['Underway (engine)', 'Anchored', 'Not under command', 'Restricted',
+               'Constrained by draft', 'Moored', 'Aground', 'Fishing', 'Sailing'];
+    return s[code] || (code != null ? `Status ${code}` : '—');
+  }
+
+  function closeTargetCard() {
+    document.getElementById('target-card').classList.remove('visible');
+    _cardType = null; _cardId = null;
+  }
+
+  async function lockFromCard() {
+    if (!_cardType || !_cardId) return;
+    if (_cardType === 'adsb') {
+      const isLocked = _cardId === adsbFollowIcao;
+      if (isLocked) {
+        await fetch('/adsb/follow', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ icao24: null }) });
+        adsbFollowIcao = null;
+        document.getElementById('map-release-btn').style.display = 'none';
+        if (!marineFollowMmsi) document.getElementById('map-lock-label').textContent = '';
+        updateFlightMarkers();
+      } else {
+        await fetch('/adsb/follow', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ icao24: _cardId }) });
+        adsbFollowIcao = _cardId;
+      }
+    } else {
+      const isLocked = _cardId === marineFollowMmsi;
+      if (isLocked) {
+        await fetch('/marine/follow', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mmsi: null }) });
+        marineFollowMmsi = null;
+        document.getElementById('map-marine-release-btn').style.display = 'none';
+        if (!adsbFollowIcao) document.getElementById('map-lock-label').textContent = '';
+        updateVesselMarkers();
+        if (mode === 'globe') draw();
+      } else {
+        await fetch('/marine/follow', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mmsi: _cardId }) });
+        marineFollowMmsi = _cardId;
+      }
+    }
+    showTargetCard(_cardType, _cardId);
+  }
 
   // ── Mission elapsed timer ─────────────────────────────────────────────────
   (function() {
