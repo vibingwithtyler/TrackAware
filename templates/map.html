@@ -35,17 +35,17 @@
 
     header {
       display: flex; align-items: center; gap: 24px;
-      padding: 10px 20px; border-bottom: 1px solid #1a1a1a;
+      padding: 10px 20px; border-bottom: 1px solid #2a2a2a;
       flex-shrink: 0;
     }
-    header h1 { font-size: 0.9rem; letter-spacing: 0.2em; text-transform: uppercase; color: #666; }
+    header h1 { font-size: 0.9rem; letter-spacing: 0.2em; text-transform: uppercase; color: #aaa; }
 
     .mission-info {
       margin-left: auto; display: flex; flex-direction: column;
       align-items: flex-end; gap: 1px;
     }
     .mission-id      { font-size: 0.6rem; letter-spacing: 0.15em; color: #4caf50; text-transform: uppercase; }
-    .mission-elapsed { font-size: 0.62rem; letter-spacing: 0.08em; color: #444; font-variant-numeric: tabular-nums; }
+    .mission-elapsed { font-size: 0.62rem; letter-spacing: 0.08em; color: #888; font-variant-numeric: tabular-nums; }
 
     /* ── Map container ── */
     #map-container {
@@ -71,19 +71,19 @@
 
     /* Leaflet overrides */
     .leaflet-control-attribution {
-      background: rgba(10,10,10,0.7) !important; color: #333 !important; font-size: 0.5rem !important;
+      background: rgba(10,10,10,0.7) !important; color: #666 !important; font-size: 0.5rem !important;
     }
-    .leaflet-control-attribution a { color: #444 !important; }
-    .leaflet-control-zoom a { background: #111 !important; color: #555 !important; border-color: #222 !important; }
-    .leaflet-control-zoom a:hover { background: #1a1a1a !important; color: #888 !important; }
+    .leaflet-control-attribution a { color: #777 !important; }
+    .leaflet-control-zoom a { background: #111 !important; color: #888 !important; border-color: #333 !important; }
+    .leaflet-control-zoom a:hover { background: #1a1a1a !important; color: #ccc !important; }
 
     /* ── HUD ── */
     .hud {
       position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
       display: flex; gap: 10px; align-items: center;
-      background: rgba(13,13,13,0.92); border: 1px solid #2a2a2a;
+      background: rgba(13,13,13,0.92); border: 1px solid #3a3a3a;
       font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
-      color: #555; padding: 5px 14px; z-index: 1000;
+      color: #aaa; padding: 5px 14px; z-index: 1000;
       pointer-events: none; white-space: nowrap;
     }
     .hud-dot {
@@ -101,7 +101,7 @@
       padding: 5px 16px; cursor: pointer; z-index: 1000; pointer-events: auto;
       display: none;
     }
-    #map-release-btn       { border: 1px solid #f44336; color: #f44336; }
+    #map-release-btn        { border: 1px solid #f44336; color: #f44336; }
     #map-marine-release-btn { border: 1px solid #ff9800; color: #ff9800; top: 48px; }
 
     /* ── Zoom buttons ── */
@@ -111,7 +111,7 @@
     }
     .zoom-btn {
       width: 28px; height: 28px;
-      background: rgba(10,10,10,0.88); border: 1px solid #2a2a2a; color: #666;
+      background: rgba(10,10,10,0.88); border: 1px solid #3a3a3a; color: #aaa;
       font-family: 'Courier New', monospace; font-size: 1.05rem; line-height: 1;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: border-color 0.15s, color 0.15s; user-select: none;
@@ -124,19 +124,19 @@
       position: absolute; top: 12px; right: 12px;
       z-index: 1000; width: 240px;
       background: rgba(10,10,10,0.92);
-      border: 1px solid #222;
+      border: 1px solid #333;
       display: flex; flex-direction: column;
     }
 
     .fp-section {
       padding: 10px 14px;
-      border-bottom: 1px solid #1a1a1a;
+      border-bottom: 1px solid #2a2a2a;
     }
     .fp-section:last-child { border-bottom: none; }
 
     .fp-title {
       font-size: 0.5rem; letter-spacing: 0.25em; text-transform: uppercase;
-      color: #333; margin-bottom: 10px;
+      color: #888; margin-bottom: 10px;
     }
 
     /* Feed toggle rows */
@@ -144,18 +144,18 @@
       display: flex; align-items: center; gap: 8px;
       padding: 5px 0;
     }
-    .feed-row + .feed-row { border-top: 1px solid #141414; }
+    .feed-row + .feed-row { border-top: 1px solid #222; }
 
-    .feed-icon { font-size: 0.75rem; width: 16px; text-align: center; flex-shrink: 0; }
+    .feed-icon { font-size: 0.75rem; width: 16px; text-align: center; flex-shrink: 0; color: #888; }
     .feed-label {
       flex: 1; font-size: 0.62rem; letter-spacing: 0.08em;
-      text-transform: uppercase; color: #555;
+      text-transform: uppercase; color: #ccc;
     }
     .feed-count {
-      font-size: 0.58rem; letter-spacing: 0.05em; color: #2a2a2a;
+      font-size: 0.58rem; letter-spacing: 0.05em; color: #666;
       min-width: 28px; text-align: right;
     }
-    .feed-count.active-adsb  { color: #00bcd4; }
+    .feed-count.active-adsb   { color: #00bcd4; }
     .feed-count.active-marine { color: #ff9800; }
 
     /* Toggle switch */
@@ -163,13 +163,13 @@
     .tgl input { opacity: 0; width: 0; height: 0; position: absolute; }
     .tgl-track {
       position: absolute; inset: 0; border-radius: 9px;
-      background: #1a1a1a; border: 1px solid #2a2a2a;
+      background: #222; border: 1px solid #444;
       transition: background 0.2s, border-color 0.2s; cursor: pointer;
     }
     .tgl-thumb {
       position: absolute; top: 3px; left: 3px;
       width: 10px; height: 10px; border-radius: 50%;
-      background: #3a3a3a; transition: transform 0.2s, background 0.2s;
+      background: #777; transition: transform 0.2s, background 0.2s;
     }
     .tgl input:checked ~ .tgl-track { border-color: var(--tgl-color, #4caf50); }
     .tgl input:checked ~ .tgl-track .tgl-thumb {
@@ -184,16 +184,16 @@
     }
     .fp-coord-label {
       font-size: 0.5rem; letter-spacing: 0.12em; text-transform: uppercase;
-      color: #333; width: 22px; flex-shrink: 0;
+      color: #888; width: 22px; flex-shrink: 0;
     }
     .fp-coord-input {
-      flex: 1; background: #0a0a0a; border: 1px solid #1e1e1e; color: #888;
+      flex: 1; background: #111; border: 1px solid #333; color: #ccc;
       font-family: 'Courier New', monospace; font-size: 0.65rem;
       padding: 4px 6px; outline: none; transition: border-color 0.15s;
     }
-    .fp-coord-input:focus { border-color: #2a2a2a; color: #ccc; }
+    .fp-coord-input:focus { border-color: #666; color: #eee; }
     .fp-apply {
-      width: 100%; background: none; border: 1px solid #2a2a2a; color: #555;
+      width: 100%; background: none; border: 1px solid #444; color: #aaa;
       font-family: 'Courier New', monospace; font-size: 0.58rem;
       letter-spacing: 0.12em; text-transform: uppercase;
       padding: 5px 0; cursor: pointer; margin-top: 2px;
@@ -202,13 +202,13 @@
     .fp-apply:hover { border-color: #4caf50; color: #4caf50; }
 
     .fp-coord-display {
-      font-size: 0.55rem; color: #2a2a2a; letter-spacing: 0.04em;
+      font-size: 0.55rem; color: #888; letter-spacing: 0.04em;
       margin-top: 6px; line-height: 1.5;
     }
 
     .fp-mode-badge {
       font-size: 0.5rem; letter-spacing: 0.15em; text-transform: uppercase;
-      color: #222; border: 1px solid #1a1a1a; padding: 2px 6px;
+      color: #777; border: 1px solid #3a3a3a; padding: 2px 6px;
       display: inline-block; margin-top: 5px;
     }
 
@@ -217,14 +217,14 @@
       position: absolute; bottom: 20px; left: 12px;
       z-index: 1000; width: 220px;
       background: rgba(10,10,10,0.95);
-      border: 1px solid #2a2a2a;
+      border: 1px solid #3a3a3a;
       display: none; flex-direction: column;
     }
     .target-card.visible { display: flex; }
 
     .tc-header {
       display: flex; align-items: center; gap: 8px;
-      padding: 8px 10px; border-bottom: 1px solid #1a1a1a;
+      padding: 8px 10px; border-bottom: 1px solid #2a2a2a;
     }
     .tc-badge {
       font-size: 0.48rem; letter-spacing: 0.2em; text-transform: uppercase;
@@ -235,30 +235,30 @@
     .tc-badge.locked { color: #4caf50; border-color: #4caf50; }
 
     .tc-id {
-      flex: 1; font-size: 0.65rem; letter-spacing: 0.06em; color: #aaa;
+      flex: 1; font-size: 0.7rem; letter-spacing: 0.06em; color: #e0e0e0;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .tc-close {
-      background: none; border: none; color: #333; font-size: 0.9rem;
+      background: none; border: none; color: #777; font-size: 0.9rem;
       cursor: pointer; line-height: 1; padding: 0 2px; flex-shrink: 0;
     }
-    .tc-close:hover { color: #888; }
+    .tc-close:hover { color: #ccc; }
 
     .tc-fields {
-      padding: 8px 10px; display: flex; flex-direction: column; gap: 5px;
+      padding: 8px 10px; display: flex; flex-direction: column; gap: 6px;
     }
     .tc-row {
       display: flex; justify-content: space-between; align-items: baseline;
     }
     .tc-label {
-      font-size: 0.5rem; letter-spacing: 0.15em; text-transform: uppercase; color: #333;
+      font-size: 0.5rem; letter-spacing: 0.15em; text-transform: uppercase; color: #777;
     }
-    .tc-value { font-size: 0.65rem; color: #888; letter-spacing: 0.04em; }
-    .tc-value.hi { color: #ccc; }
+    .tc-value { font-size: 0.68rem; color: #ccc; letter-spacing: 0.04em; }
+    .tc-value.hi { color: #f0f0f0; }
 
     .tc-lock {
       margin: 4px 10px 10px;
-      background: none; border: 1px solid #2a2a2a; color: #555;
+      background: none; border: 1px solid #444; color: #aaa;
       font-family: 'Courier New', monospace; font-size: 0.58rem;
       letter-spacing: 0.12em; text-transform: uppercase;
       padding: 5px 0; cursor: pointer; width: calc(100% - 20px);
