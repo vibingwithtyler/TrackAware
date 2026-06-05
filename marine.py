@@ -10,14 +10,14 @@ from logger import event_log
 
 AISSTREAM_KEY = os.environ.get('AISSTREAM_API_KEY', 'e4dbeaf1b785aa70b26e4a1b690f44e63c9973f8')
 _WS_URL       = 'wss://stream.aisstream.io/v0/stream'
-BOX_KM        = 5.0
-VP_MARGIN     = 0.20  # 20% — matches synthetic tracker and adsb.py
+BOX_KM        = 56.33  # 35 miles
+VP_MARGIN     = 0.20
 
 
 def _in_box(v_lat: float, v_lon: float, c_lat: float, c_lon: float) -> bool:
     dlat = abs(v_lat - c_lat) * 111.32
     dlon = abs(v_lon - c_lon) * 111.32 * math.cos(math.radians(c_lat))
-    return dlat <= 2.5 and dlon <= 2.5
+    return dlat <= BOX_KM / 2 and dlon <= BOX_KM / 2
 
 
 def _edge_follow(ac_lat: float, ac_lon: float, c_lat: float, c_lon: float) -> tuple[float, float, bool]:

@@ -11,8 +11,8 @@ _SSL_CTX.check_hostname = False
 _SSL_CTX.verify_mode    = ssl.CERT_NONE
 
 POLL_INTERVAL = 5.0
-RADIUS_NM     = 2.5   # ~4.6 km — covers 5×5 km box
-BOX_KM        = 5.0
+RADIUS_NM     = 25.0  # covers corners of 35×35 mi box
+BOX_KM        = 56.33  # 35 miles
 VP_MARGIN     = 0.20  # 20% of frame — matches synthetic tracker
 
 _LIVE_URL = 'https://api.airplanes.live/v2/point/{lat}/{lon}/{r}'
@@ -37,7 +37,7 @@ def _fetch(lat: float, lon: float) -> list:
 def _in_box(ac_lat: float, ac_lon: float, c_lat: float, c_lon: float) -> bool:
     dlat = abs(ac_lat - c_lat) * 111.32
     dlon = abs(ac_lon - c_lon) * 111.32 * math.cos(math.radians(c_lat))
-    return dlat <= 2.5 and dlon <= 2.5
+    return dlat <= BOX_KM / 2 and dlon <= BOX_KM / 2
 
 
 def _edge_follow(ac_lat: float, ac_lon: float, c_lat: float, c_lon: float) -> tuple[float, float, bool]:

@@ -30,22 +30,6 @@ def map_view():
     return render_template("map.html", mission_id=MISSION_ID, started_at=int(MISSION_STARTED))
 
 
-@app.route("/vision")
-def vision():
-    return render_template("vision.html", mission_id=MISSION_ID, started_at=int(MISSION_STARTED))
-
-
-@app.route("/log")
-def log_view():
-    return render_template("log.html", mission_id=MISSION_ID, started_at=int(MISSION_STARTED))
-
-
-@app.route("/log/poll")
-def log_poll():
-    after = request.args.get('after', 0, type=int)
-    events = event_log.get_since(after)
-    return jsonify(events=events, server_id=SERVER_ID)
-
 
 @app.route("/adsb/flights")
 def adsb_flights():
