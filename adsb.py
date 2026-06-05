@@ -11,8 +11,8 @@ _SSL_CTX.check_hostname = False
 _SSL_CTX.verify_mode    = ssl.CERT_NONE
 
 POLL_INTERVAL = 5.0
-RADIUS_NM     = 25.0  # covers corners of 35×35 mi box
-BOX_KM        = 56.33  # 35 miles
+RADIUS_NM     = 20.0  # covers corners of 30×30 mi box
+BOX_KM        = 48.28  # 30 miles
 VP_MARGIN     = 0.20  # 20% of frame — matches synthetic tracker
 
 _LIVE_URL = 'https://api.airplanes.live/v2/point/{lat}/{lon}/{r}'

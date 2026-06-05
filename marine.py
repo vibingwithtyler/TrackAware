@@ -10,7 +10,7 @@ from logger import event_log
 
 AISSTREAM_KEY = os.environ.get('AISSTREAM_API_KEY', 'e4dbeaf1b785aa70b26e4a1b690f44e63c9973f8')
 _WS_URL       = 'wss://stream.aisstream.io/v0/stream'
-BOX_KM        = 56.33  # 35 miles
+BOX_KM        = 48.28  # 30 miles
 VP_MARGIN     = 0.20
 
 
