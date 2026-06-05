@@ -474,10 +474,9 @@
   let _cardType      = null;   // 'adsb' | 'marine'
   let _cardId        = null;   // icao24 or mmsi
 
-  let trackingArmed  = false;
-  let trackingTarget = null;   // {type, id, lat, lon}
-  let trackRect      = null;   // Leaflet rectangle
-  let trackGeoBox    = null;   // GeoJSON for canvas draw
+  let trackingArmed    = false;
+  const trackingTargets = new Map();  // id → {type, id, lat, lon}
+  const trackRects      = new Map();  // id → Leaflet rectangle
 
   let adsbFlights    = [];
   let adsbFollowIcao = null;
@@ -579,12 +578,13 @@
       if (v.name) { ctx.font = '9px Courier New'; ctx.fillStyle = color; ctx.fillText(v.name, vx + 8, vy + 3); }
     });
 
-    // Tracking box (5km × 5km, yellow)
-    if (trackGeoBox) {
-      ctx.beginPath(); path(trackGeoBox);
+    // Tracking boxes (5km × 5km, yellow, one per tracked target)
+    trackingTargets.forEach(tgt => {
+      const box = trackingBoxGeoJSON(tgt.lat, tgt.lon);
+      ctx.beginPath(); path(box);
       ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 1.5; ctx.stroke();
       ctx.fillStyle = 'rgba(255,215,0,0.06)'; ctx.fill();
-    }
+    });
 
     // Selection ring
     if (_cardId) {
@@ -1032,47 +1032,72 @@
     const pool  = type === 'adsb' ? adsbFlights : marineVessels;
     const idKey = type === 'adsb' ? 'icao24' : 'mmsi';
 
-    // Keep tracking existing target if it still matches
-    if (trackingTarget && trackingTarget.type === type) {
-      const cur = pool.find(t => t[idKey] === trackingTarget.id);
-      if (cur && matchesTracking(cur, type)) {
-        trackingTarget = { type, id: cur[idKey], lat: cur.lat, lon: cur.lon };
-        _updateTrackBox();
-        return;
+    // Update or evict existing tracked targets
+    trackingTargets.forEach((tgt, id) => {
+      const cur = pool.find(t => t[idKey] === id);
+      if (!cur) {
+        // Left the feed box entirely
+        _removeTrackTarget(id);
+      } else if (type === 'adsb' && !(cur.alt_ft > 0)) {
+        // Aircraft on the ground — stop tracking
+        _removeTrackTarget(id);
+      } else {
+        // Still airborne/active — update position
+        tgt.lat = cur.lat; tgt.lon = cur.lon;
+        _updateTrackRect(id, cur.lat, cur.lon);
       }
-      // Lost or no longer matches — clear and search below
-      trackingTarget = null;
-      _clearTrackBox();
-      _setTrackStatus('Lost — searching...', 'searching');
-    }
+    });
 
-    // Find a new match
-    const match = pool.find(t => matchesTracking(t, type));
-    if (match) {
-      trackingTarget = { type, id: match[idKey], lat: match.lat, lon: match.lon };
-      _updateTrackBox();
-      const label = type === 'adsb' ? (match.callsign || match.icao24) : (match.name || match.mmsi);
-      _setTrackStatus(`Tracking: ${label}`, 'tracking');
-    } else if (!trackingTarget) {
-      _setTrackStatus('Searching...', 'searching');
-    }
+    // Pick up any new matches
+    pool.forEach(item => {
+      const id = item[idKey];
+      if (trackingTargets.has(id)) return;                   // already tracked
+      if (type === 'adsb' && !(item.alt_ft > 0)) return;    // skip ground traffic
+      if (matchesTracking(item, type)) {
+        trackingTargets.set(id, { type, id, lat: item.lat, lon: item.lon });
+        _updateTrackRect(id, item.lat, item.lon);
+      }
+    });
+
+    if (mode === 'globe') draw();
+    _updateTrackStatus();
   }
 
-  function _updateTrackBox() {
-    const { lat, lon } = trackingTarget;
-    trackGeoBox = trackingBoxGeoJSON(lat, lon);
-    const hLat  = kmToDegLat(TRACK_KM / 2), hLon = kmToDegLon(TRACK_KM / 2, lat);
+  function _updateTrackRect(id, lat, lon) {
+    const hLat = kmToDegLat(TRACK_KM / 2), hLon = kmToDegLon(TRACK_KM / 2, lat);
     const bounds = [[lat - hLat, lon - hLon], [lat + hLat, lon + hLon]];
-    const style  = { color: '#ffd700', weight: 2, fillColor: '#ffd700', fillOpacity: 0.06, interactive: false };
-    if (trackRect) trackRect.setBounds(bounds);
-    else           trackRect = L.rectangle(bounds, style).addTo(leafMap);
+    if (trackRects.has(id)) {
+      trackRects.get(id).setBounds(bounds);
+    } else {
+      trackRects.set(id, L.rectangle(bounds, {
+        color: '#ffd700', weight: 2, fillColor: '#ffd700', fillOpacity: 0.06, interactive: false,
+      }).addTo(leafMap));
+    }
+  }
+
+  function _removeTrackTarget(id) {
+    trackingTargets.delete(id);
+    if (trackRects.has(id)) { leafMap.removeLayer(trackRects.get(id)); trackRects.delete(id); }
+  }
+
+  function _clearAllTracks() {
+    trackingTargets.clear();
+    trackRects.forEach(r => leafMap.removeLayer(r));
+    trackRects.clear();
     if (mode === 'globe') draw();
   }
 
-  function _clearTrackBox() {
-    trackGeoBox = null;
-    if (trackRect) { leafMap.removeLayer(trackRect); trackRect = null; }
-    if (mode === 'globe') draw();
+  function _updateTrackStatus() {
+    const n = trackingTargets.size;
+    if (n === 0) {
+      _setTrackStatus('Searching...', 'searching');
+    } else {
+      const ids = Array.from(trackingTargets.values())
+        .map(t => t.type === 'adsb'
+          ? (adsbFlights.find(f => f.icao24 === t.id)?.callsign || t.id)
+          : (marineVessels.find(v => v.mmsi === t.id)?.name || t.id));
+      _setTrackStatus(n <= 3 ? ids.join(', ') : `${n} targets`, 'tracking');
+    }
   }
 
   function _setTrackStatus(msg, cls = '') {
@@ -1092,8 +1117,7 @@
     } else {
       btn.textContent = 'Arm Tracking';
       btn.classList.remove('armed');
-      trackingTarget = null;
-      _clearTrackBox();
+      _clearAllTracks();
       _setTrackStatus('Disarmed');
     }
   }
@@ -1104,8 +1128,7 @@
     document.getElementById('trk-alt-row').style.display = isAir ? '' : 'none';
     document.getElementById('trk-prefix-label').textContent = isAir ? 'Callsign' : 'Name';
     document.getElementById('trk-prefix').placeholder = isAir ? 'e.g. UAL, N' : 'e.g. MAERSK';
-    // Reset if armed — new type means start fresh
-    if (trackingArmed) { trackingTarget = null; _clearTrackBox(); _setTrackStatus('Searching...', 'searching'); checkTracking(); }
+    if (trackingArmed) { _clearAllTracks(); _setTrackStatus('Searching...', 'searching'); checkTracking(); }
   }
 
   function onTrkCheckChange(key) {
