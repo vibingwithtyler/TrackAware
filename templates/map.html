@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrackVision — Map</title>
+  <title>TrackAware — Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
@@ -74,7 +74,6 @@
       background: #050c14;
     }
 
-    /* Leaflet pane: always present, shown/hidden by mode */
     .leaf-pane {
       position: absolute;
       inset: 0;
@@ -85,7 +84,6 @@
     }
     .leaf-pane.visible { opacity: 1; pointer-events: auto; }
 
-    /* D3 globe canvas: on top of Leaflet */
     #globe-canvas {
       position: absolute;
       inset: 0;
@@ -96,7 +94,6 @@
     }
     #globe-canvas.hidden { opacity: 0; pointer-events: none; }
 
-    /* Leaflet dark attribution */
     .leaflet-control-attribution {
       background: rgba(10,10,10,0.7) !important;
       color: #333 !important;
@@ -161,13 +158,13 @@
       color: #2a2a2a; border: 1px solid #1a1a1a; padding: 3px 8px; text-align: center;
     }
 
-    /* ── Video & Detections tab ── */
+    /* ── Live tab ── */
     #tab-vid { flex-direction: row; position: relative; }
     #map-vid  { flex: 1; }
 
     .hud {
       position: absolute; top: 12px;
-      left: calc(50% - 160px); transform: translateX(-50%);
+      left: 50%; transform: translateX(-50%);
       display: flex; gap: 12px; align-items: center;
       background: #0d0d0dee; border: 1px solid #2a2a2a;
       font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
@@ -179,40 +176,6 @@
       animation: pulse 1.2s ease-in-out infinite;
     }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-    #det-count { color: #4caf50; }
-
-    .det-panel {
-      width: 320px; flex-shrink: 0; border-left: 1px solid #1e1e1e;
-      display: flex; flex-direction: column; overflow: hidden;
-    }
-    .det-panel-header {
-      padding: 10px 14px; border-bottom: 1px solid #1a1a1a;
-      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-    }
-    .det-panel-header h2 { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: #555; }
-    .det-panel-header span { font-size: 0.6rem; color: #333; letter-spacing: 0.05em; }
-    .det-filter { padding: 5px 10px; border-bottom: 1px solid #1a1a1a; flex-shrink: 0; }
-    .det-filter input {
-      width: 100%; background: #0a0a0a; border: 1px solid #1e1e1e;
-      color: #555; font-family: 'Courier New', monospace; font-size: 0.6rem;
-      letter-spacing: 0.05em; padding: 4px 6px; outline: none;
-    }
-    .det-filter input:focus { border-color: #333; color: #888; }
-    .det-filter input::placeholder { color: #252525; }
-    .det-table-wrap { flex: 1; overflow-y: auto; }
-    .det-table-wrap::-webkit-scrollbar { width: 4px; }
-    .det-table-wrap::-webkit-scrollbar-track { background: #0d0d0d; }
-    .det-table-wrap::-webkit-scrollbar-thumb { background: #2a2a2a; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.62rem; letter-spacing: 0.03em; }
-    thead th {
-      padding: 7px 8px; text-align: left; color: #444; font-weight: normal;
-      letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid #1a1a1a;
-      position: sticky; top: 0; background: #0d0d0d;
-    }
-    tbody tr { border-bottom: 1px solid #141414; }
-    tbody td { padding: 6px 8px; color: #3a3a3a; white-space: nowrap; }
-    tbody tr:first-child td { color: #bbb; }
-    .td-id { color: #4caf50 !important; }
   </style>
 </head>
 <body>
@@ -220,9 +183,9 @@
 <div class="classif-banner bottom">UNCLASSIFIED // SIMULATION // NOT FOR OPERATIONAL USE</div>
 
 <header>
-  <h1>TrackVision</h1>
+  <h1>TrackAware</h1>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('vid', event)">Video and Detections</button>
+    <button class="tab active" onclick="switchTab('vid', event)">Live</button>
     <button class="tab"        onclick="switchTab('map', event)">Map View</button>
   </div>
   <div class="mission-info">
@@ -258,11 +221,11 @@
   </div>
 </div>
 
-<!-- Video and Detections tab -->
+<!-- Live tab -->
 <div id="tab-vid" class="tab-content active">
   <div class="hud">
     <div class="hud-dot"></div>
-    Live &nbsp;|&nbsp; <span id="det-count">0</span> object(s)
+    Live
     <span id="map-lock-label" style="color:#4caf50;margin-left:10px;"></span>
   </div>
   <button id="map-release-btn" onclick="mapReleaseFollow()" style="display:none;position:absolute;top:50px;left:50%;transform:translateX(-50%);background:none;border:1px solid #f44336;color:#f44336;font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;padding:5px 16px;cursor:pointer;z-index:1000;pointer-events:auto;">⊗ Release Target</button>
@@ -275,58 +238,23 @@
       <button class="zoom-btn" onclick="mapZoomOut()">&minus;</button>
     </div>
   </div>
-  <div class="det-panel">
-    <div class="det-panel-header">
-      <h2>Detection Log</h2>
-      <span id="next-snap">next snapshot in 5s</span>
-    </div>
-    <div class="det-filter">
-      <input id="id-filter" type="text" placeholder="Filter by ID (e.g. TGT-002)" oninput="filterByID(this.value)">
-    </div>
-    <div class="det-table-wrap">
-      <table>
-        <thead>
-          <tr><th>ID</th><th>Lat</th><th>Lon</th><th>Hdg</th><th>Speed</th></tr>
-        </thead>
-        <tbody id="det-tbody"></tbody>
-      </table>
-    </div>
-  </div>
 </div>
 
 <script>
   // ── Constants ──────────────────────────────────────────────────────────────
-  const STORAGE_KEY    = 'trackvision_camera_coords';
-  const BOX_KM         = 5;
-  const FRAME_W        = 500;
-  const FRAME_H        = 500;
-  const GLENDALE       = { lat: 34.1425, lon: -118.2551 };
-  const SNAP_INTERVAL  = 5000;
-  const MAX_ROWS       = 50;
-  const SSE_INTERVAL       = 1000 / 15;
-  const GHOST_DISPLAY_TTL  = 30000;   // ms to keep a ghost on the map after last seen
+  const STORAGE_KEY  = 'trackvision_camera_coords';
+  const BOX_KM       = 5;
+  const GLENDALE     = { lat: 34.1425, lon: -118.2551 };
 
   // Globe ↔ map mode thresholds
-  const GLOBE_TO_MAP   = 14000;  // D3 scale at which we switch to Leaflet
-  const MAP_TO_GLOBE   = 7;      // Leaflet zoom at which we switch back to globe
+  const GLOBE_TO_MAP = 14000;
+  const MAP_TO_GLOBE = 7;
 
   // ── State ──────────────────────────────────────────────────────────────────
-  let currentCoords    = loadCoords();
-  let latestPos        = null;
-  let snapPos          = null;
-  let snapTime         = null;
-  let countdown        = SNAP_INTERVAL / 1000;
-  let animFrom         = null;
-  let animTo           = null;
-  let animStart        = null;
-  let detPos           = null;
-  let mode             = 'globe';   // 'globe' | 'map'
-  let activeTab        = 'vid';
-  let globeAnimating   = false;
-  let ghostDetPos       = [];        // [{lat, lon, id}] — derived from ghostDisplayMap
-  let currentDetections = [];       // full latest SSE detections array
-  const ghostMarkerMap  = new Map(); // id → L.circleMarker
-  const ghostDisplayMap = new Map(); // id → {lat, lon, id, expiresAt}
+  let currentCoords  = loadCoords();
+  let mode           = 'globe';
+  let activeTab      = 'vid';
+  let globeAnimating = false;
 
   // ADS-B state
   let adsbFlights    = [];
@@ -341,15 +269,6 @@
   // ── Geo helpers ───────────────────────────────────────────────────────────
   function kmToDegLat(km) { return km / 111.32; }
   function kmToDegLon(km, lat) { return km / (111.32 * Math.cos(lat * Math.PI / 180)); }
-
-  function pixelToLatLon(px, py) {
-    const { lat, lon } = currentCoords;
-    const hLat = kmToDegLat(BOX_KM / 2), hLon = kmToDegLon(BOX_KM / 2, lat);
-    return {
-      lat: (lat + hLat) - (py / FRAME_H) * (hLat * 2),
-      lon: (lon - hLon) + (px / FRAME_W) * (hLon * 2),
-    };
-  }
 
   function boxGeoJSON(lat, lon) {
     const hLat = kmToDegLat(BOX_KM / 2), hLon = kmToDegLon(BOX_KM / 2, lat);
@@ -369,26 +288,6 @@
   function leafBounds(lat, lon) {
     const hLat = kmToDegLat(BOX_KM / 2), hLon = kmToDegLon(BOX_KM / 2, lat);
     return [[lat - hLat, lon - hLon], [lat + hLat, lon + hLon]];
-  }
-
-  function haversine(lat1, lon1, lat2, lon2) {
-    const R = 6371000;
-    const φ1 = lat1 * Math.PI / 180, φ2 = lat2 * Math.PI / 180;
-    const Δφ = (lat2 - lat1) * Math.PI / 180, Δλ = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
-  function bearing(lat1, lon1, lat2, lon2) {
-    const φ1 = lat1 * Math.PI / 180, φ2 = lat2 * Math.PI / 180;
-    const Δλ = (lon2 - lon1) * Math.PI / 180;
-    const y = Math.sin(Δλ) * Math.cos(φ2);
-    const x = Math.cos(φ1)*Math.sin(φ2) - Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
-    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-  }
-
-  function toCardinal(deg) {
-    return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg / 45) % 8];
   }
 
   // ── D3 Globe ───────────────────────────────────────────────────────────────
@@ -436,22 +335,6 @@
       ctx.moveTo(cam[0], cam[1]-8); ctx.lineTo(cam[0], cam[1]+8);
       ctx.stroke();
     }
-
-    if (detPos) {
-      const dp = projection([detPos.lon, detPos.lat]);
-      if (dp) {
-        ctx.beginPath(); ctx.arc(dp[0], dp[1], 3, 0, Math.PI * 2);
-        ctx.fillStyle = '#f44336'; ctx.fill();
-      }
-    }
-
-    ghostDetPos.forEach(gd => {
-      const p = projection([gd.lon, gd.lat]);
-      if (p) {
-        ctx.beginPath(); ctx.arc(p[0], p[1], 3, 0, Math.PI * 2);
-        ctx.fillStyle = '#f44336'; ctx.fill();
-      }
-    });
 
     // ADS-B flights
     adsbFlights.forEach(f => {
@@ -587,10 +470,6 @@
   const boxStyle = { color: '#2196f3', weight: 2, fillColor: '#2196f3', fillOpacity: 0.08 };
   let rectMain = null, rectVid = null;
 
-  const detLayer  = L.layerGroup().addTo(leafVid);
-  const detMarker = L.circleMarker([0, 0], { radius: 2, color: '#f44336', fillColor: '#f44336', fillOpacity: 1, weight: 0, interactive: false });
-  let detMarkerAdded = false;
-
   const flightLayerMain = L.layerGroup().addTo(leafMain);
   const flightLayerVid  = L.layerGroup().addTo(leafVid);
   const vesselLayerMain = L.layerGroup().addTo(leafMain);
@@ -660,20 +539,11 @@
     leafVid.setView( [lat, lon], zoom, { animate: false });
     updateLeafletBox(currentCoords.lat, currentCoords.lon, false);
 
-    // Show Leaflet, hide canvas
     document.getElementById('leaf-main').classList.add('visible');
     document.getElementById('leaf-vid').classList.add('visible');
     canvas.classList.add('hidden');
 
     document.getElementById('mode-badge').textContent = 'Map';
-    ghostDetPos.forEach(gd => {
-      if (!ghostMarkerMap.has(gd.id)) {
-        const m = L.circleMarker([gd.lat, gd.lon], {
-          radius: 2, color: '#f44336', fillColor: '#f44336', fillOpacity: 1, weight: 0, interactive: false,
-        }).addTo(detLayer);
-        ghostMarkerMap.set(gd.id, m);
-      }
-    });
     setTimeout(() => { leafMain.invalidateSize(); leafVid.invalidateSize(); }, 30);
   }
 
@@ -685,15 +555,11 @@
     const scale  = leafZoomToD3Scale(fromLeaf.getZoom());
     projection.rotate([-center.lng, -center.lat, 0]).scale(scale);
 
-    // Hide Leaflet, show canvas
     document.getElementById('leaf-main').classList.remove('visible');
     document.getElementById('leaf-vid').classList.remove('visible');
     canvas.classList.remove('hidden');
 
     document.getElementById('mode-badge').textContent = 'Globe';
-    ghostMarkerMap.forEach(m => detLayer.removeLayer(m));
-    ghostMarkerMap.clear();
-    // Ensure canvas is in the right container
     const target = document.getElementById(activeTab === 'map' ? 'map-main' : 'map-vid');
     target.appendChild(canvas);
     delete canvas._initScale;
@@ -768,7 +634,6 @@
       adsbFlights    = data.flights || [];
       adsbFollowIcao = data.follow_icao || null;
 
-      // Follow: use server-computed center (edge-follow logic)
       if (data.follow_icao && data.center) {
         const { lat, lon } = data.center;
         if (lat !== currentCoords.lat || lon !== currentCoords.lon) {
@@ -788,6 +653,7 @@
       document.getElementById('map-lock-label').textContent = adsbFollowIcao
         ? `LOCKED: ${adsbFollowIcao}${f?.callsign ? ' / ' + f.callsign : ''}`
         : '';
+      document.getElementById('map-lock-label').style.color = '#4caf50';
     } catch (_) {}
   }
 
@@ -835,7 +701,6 @@
       marineVessels    = data.vessels || [];
       marineFollowMmsi = data.follow_mmsi || null;
 
-      // Follow: use server-computed center (edge-follow logic)
       if (data.follow_mmsi && data.center) {
         const { lat, lon } = data.center;
         if (lat !== currentCoords.lat || lon !== currentCoords.lon) {
@@ -862,137 +727,6 @@
   setInterval(pollADSB, 5000);
   setInterval(pollMarine, 5000);
 
-  // ── rAF detection interpolation ────────────────────────────────────────────
-  function rAFLoop(now) {
-    if (animFrom && animTo && animStart !== null) {
-      const t   = Math.min((now - animStart) / SSE_INTERVAL, 1);
-      const lat = animFrom.lat + (animTo.lat - animFrom.lat) * t;
-      const lon = animFrom.lon + (animTo.lon - animFrom.lon) * t;
-      detPos = { lat, lon };
-      if (mode === 'globe') {
-        draw();
-      } else {
-        if (detMarkerAdded) detMarker.setLatLng([lat, lon]);
-      }
-    }
-    requestAnimationFrame(rAFLoop);
-  }
-  requestAnimationFrame(rAFLoop);
-
-  // ── Detection rendering ────────────────────────────────────────────────────
-  function renderDetections(detections) {
-    currentDetections = detections;
-    document.getElementById('det-count').textContent = detections.length || '0';
-
-    // Primary target
-    const primary = detections.find(d => d.id === 'TGT-001');
-    if (primary) {
-      const pos = pixelToLatLon(primary.x, primary.y);
-      latestPos = pos;
-      animFrom  = animTo || pos;
-      animTo    = pos;
-      animStart = performance.now();
-      if (!detMarkerAdded) { detMarker.addTo(detLayer); detMarkerAdded = true; }
-    } else {
-      detPos = null; animFrom = animTo = animStart = null; latestPos = null;
-      if (detMarkerAdded) { detLayer.removeLayer(detMarker); detMarkerAdded = false; }
-    }
-
-    // Ghost targets — refresh display map TTL; markers persist beyond SSE lifetime
-    detections.filter(d => d.id !== 'TGT-001').forEach(d => {
-      const pos = pixelToLatLon(d.x, d.y);
-      ghostDisplayMap.set(d.id, { lat: pos.lat, lon: pos.lon, id: d.id, expiresAt: Date.now() + GHOST_DISPLAY_TTL });
-      if (mode === 'map' && !ghostMarkerMap.has(d.id)) {
-        const m = L.circleMarker([pos.lat, pos.lon], {
-          radius: 2, color: '#f44336', fillColor: '#f44336', fillOpacity: 1, weight: 0, interactive: false,
-        }).addTo(detLayer);
-        ghostMarkerMap.set(d.id, m);
-      }
-    });
-    ghostDetPos = Array.from(ghostDisplayMap.values());
-  }
-
-  function pruneGhostDisplay() {
-    const now = Date.now();
-    ghostDisplayMap.forEach((gd, id) => {
-      if (now >= gd.expiresAt) {
-        ghostDisplayMap.delete(id);
-        if (ghostMarkerMap.has(id)) { detLayer.removeLayer(ghostMarkerMap.get(id)); ghostMarkerMap.delete(id); }
-      }
-    });
-    ghostDetPos = Array.from(ghostDisplayMap.values());
-  }
-  setInterval(pruneGhostDisplay, 1000);
-
-  // ── Detection log table ────────────────────────────────────────────────────
-  function addTableRow(tbody, id, lat, lon, hdg, spd) {
-    const filterVal = (document.getElementById('id-filter').value || '').trim().toUpperCase();
-    const tr = document.createElement('tr');
-    tr.dataset.id = id;
-    tr.style.display = filterVal && !id.toUpperCase().includes(filterVal) ? 'none' : '';
-    tr.innerHTML =
-      `<td class="td-id">${id}</td>` +
-      `<td>${lat.toFixed(5)}</td><td>${lon.toFixed(5)}</td>` +
-      `<td>${hdg}</td><td>${spd}</td>`;
-    tbody.insertBefore(tr, tbody.firstChild);
-  }
-
-  function takeSnapshot() {
-    const now   = Date.now();
-    const tbody = document.getElementById('det-tbody');
-
-    if (latestPos) {
-      let hdgStr = 'N/A', spdStr = 'N/A';
-      if (snapPos && snapTime) {
-        const dt   = (now - snapTime) / 1000;
-        const dist = haversine(snapPos.lat, snapPos.lon, latestPos.lat, latestPos.lon);
-        const hdg  = bearing(snapPos.lat, snapPos.lon, latestPos.lat, latestPos.lon);
-        hdgStr = `${hdg.toFixed(1)}° ${toCardinal(hdg)}`;
-        spdStr = `${(dist / dt).toFixed(1)} m/s`;
-      }
-      snapPos = { ...latestPos }; snapTime = now;
-      addTableRow(tbody, 'TGT-001', latestPos.lat, latestPos.lon, hdgStr, spdStr);
-    }
-
-    ghostDetPos.forEach(gd => {
-      addTableRow(tbody, gd.id, gd.lat, gd.lon, 'N/A', 'N/A');
-    });
-
-    while (tbody.rows.length > MAX_ROWS) tbody.deleteRow(tbody.rows.length - 1);
-  }
-
-  function filterByID(val) {
-    const q = val.trim().toUpperCase();
-    document.querySelectorAll('#det-tbody tr').forEach(tr => {
-      tr.style.display = !q || tr.dataset.id.toUpperCase().includes(q) ? '' : 'none';
-    });
-  }
-
-  setInterval(takeSnapshot, SNAP_INTERVAL);
-  setInterval(() => {
-    countdown = countdown <= 1 ? SNAP_INTERVAL / 1000 : countdown - 1;
-    document.getElementById('next-snap').textContent = `next snapshot in ${countdown}s`;
-  }, 1000);
-
-  // ── SSE ───────────────────────────────────────────────────────────────────
-  const evtSource = new EventSource('/events/stream');
-  evtSource.addEventListener('detections', e => {
-    renderDetections(JSON.parse(e.data).detections);
-  });
-  evtSource.addEventListener('viewport', e => {
-    const { dx, dy } = JSON.parse(e.data);
-    const { lat, lon } = currentCoords;
-    const latOffset = -(dy * 10) / 111320;
-    const lonOffset =  (dx * 10) / (111320 * Math.cos(lat * Math.PI / 180));
-    currentCoords = { lat: lat + latOffset, lon: lon + lonOffset };
-    saveCoords(currentCoords.lat, currentCoords.lon);
-    currentGeoBox = boxGeoJSON(currentCoords.lat, currentCoords.lon);
-    animFrom = animTo = animStart = null; latestPos = detPos = null;
-    if (mode === 'globe') draw();
-    else updateLeafletBox(currentCoords.lat, currentCoords.lon, false);
-  });
-  evtSource.onerror = () => { document.getElementById('det-count').textContent = '—'; };
-
   // ── Coord management ──────────────────────────────────────────────────────
   function loadCoords() {
     try { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (s?.lat && s?.lon) return s; }
@@ -1010,7 +744,6 @@
     const lon = parseFloat(document.getElementById('inp-lon').value);
     if (isNaN(lat) || isNaN(lon)) return;
     currentCoords = { lat, lon };
-    latestPos = snapPos = snapTime = null; animFrom = animTo = animStart = null; detPos = null;
     saveCoords(lat, lon); updateDisplay(lat, lon);
     currentGeoBox = boxGeoJSON(lat, lon);
     if (mode === 'globe') {
@@ -1019,7 +752,6 @@
       leafMain.setView([lat, lon], leafMain.getZoom());
       leafVid.setView( [lat, lon], leafVid.getZoom());
       updateLeafletBox(lat, lon, false);
-      if (detMarkerAdded) { detLayer.removeLayer(detMarker); detMarkerAdded = false; }
     }
   }
 
@@ -1048,7 +780,6 @@
     if (e.key !== STORAGE_KEY) return;
     const { lat, lon } = JSON.parse(e.newValue);
     currentCoords = { lat, lon };
-    latestPos = snapPos = snapTime = null; animFrom = animTo = animStart = null; detPos = null;
     document.getElementById('inp-lat').value = lat;
     document.getElementById('inp-lon').value = lon;
     updateDisplay(lat, lon);
@@ -1056,14 +787,6 @@
     if (mode === 'globe') draw();
     else updateLeafletBox(lat, lon, false);
   });
-
-  // ── Init ──────────────────────────────────────────────────────────────────
-  document.getElementById('inp-lat').value = currentCoords.lat;
-  document.getElementById('inp-lon').value = currentCoords.lon;
-  updateDisplay(currentCoords.lat, currentCoords.lon);
-  document.getElementById('map-vid').appendChild(canvas);
-  window.addEventListener('resize', resizeGlobe);
-  resizeGlobe();
 
   // ── Release handlers ──────────────────────────────────────────────────────
   async function mapReleaseFollow() {
@@ -1088,6 +811,14 @@
     updateVesselMarkers();
     if (mode === 'globe') draw();
   }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  document.getElementById('inp-lat').value = currentCoords.lat;
+  document.getElementById('inp-lon').value = currentCoords.lon;
+  updateDisplay(currentCoords.lat, currentCoords.lon);
+  document.getElementById('map-vid').appendChild(canvas);
+  window.addEventListener('resize', resizeGlobe);
+  resizeGlobe();
 
   // ── Mission elapsed timer ─────────────────────────────────────────────────
   (function() {

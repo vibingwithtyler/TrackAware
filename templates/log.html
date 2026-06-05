@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrackVision — Event Log</title>
+  <title>TrackAware — Event Log</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -155,7 +155,7 @@
 <div class="classif-banner bottom">UNCLASSIFIED // SIMULATION // NOT FOR OPERATIONAL USE</div>
 
 <header>
-  <h1>TrackVision &mdash; Event Log</h1>
+  <h1>TrackAware &mdash; Event Log</h1>
   <div class="header-right">
     <div class="live-wrap">
       <div class="live-dot" id="live-dot"></div>
@@ -176,119 +176,6 @@
   <div class="diagram-panel">
     <div class="diag-header" id="diag-header">System Architecture</div>
     <div class="diag-scroll">
-
-      <!-- ══ SYNTHETIC mode diagram ══ -->
-      <svg id="diag-synthetic" viewBox="0 0 260 440" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <style>
-            .s-blk rect { fill: #070f07; stroke: #4caf50; stroke-width: 1; }
-            .s-blk .t   { font-family:'Courier New',monospace; fill:#4caf50; font-size:7.5px; letter-spacing:.12em; }
-            .s-blk .s   { font-family:'Courier New',monospace; fill:#5a8a5a; font-size:6px; letter-spacing:.07em; }
-            .s-conn { fill:none; stroke:#4caf50; stroke-width:1.5; stroke-dasharray:3 5;
-                      animation: flow .7s linear infinite; }
-            .s-conn.d1 { animation-delay:.2s; }
-            .s-conn.d2 { animation-delay:.4s; }
-            .s-conn.d3 { animation-delay:.6s; }
-            .s-conn.fast { animation-duration:.45s; }
-            .s-dot { fill:#4caf50; animation: nodePulse 1.6s ease-in-out infinite; }
-            .s-dot.d1 { animation-delay:.5s; }
-            .s-label { font-family:'Courier New',monospace; fill:#4caf50; font-size:6.5px; letter-spacing:.25em; text-transform:uppercase; }
-          </style>
-        </defs>
-
-        <!-- Mode label -->
-        <text x="130" y="13" text-anchor="middle" class="s-label">Synthetic Imagery</text>
-
-        <!-- Live indicator -->
-        <circle cx="130" cy="26" r="3" class="s-dot"/>
-
-        <!-- ── Block: Frame Generator ── -->
-        <g class="s-blk" transform="translate(55,36)">
-          <rect x="0" y="0" width="150" height="46"/>
-          <text x="75" y="14" text-anchor="middle" class="t">Frame Generator</text>
-          <text x="75" y="25" text-anchor="middle" class="s">make_frame(t) · scenario engine</text>
-          <text x="75" y="35" text-anchor="middle" class="s">30 FPS · 500 × 500 px</text>
-        </g>
-
-        <!-- Fork down from frame gen -->
-        <line class="s-conn" x1="130" y1="82" x2="130" y2="100"/>
-        <line class="s-conn" x1="65" y1="100" x2="195" y2="100"/>
-        <line class="s-conn d1" x1="65"  y1="100" x2="65"  y2="116"/>
-        <line class="s-conn d2" x1="195" y1="100" x2="195" y2="116"/>
-
-        <!-- ── Block: Raw MJPEG ── -->
-        <g class="s-blk" transform="translate(8,116)">
-          <rect x="0" y="0" width="110" height="44"/>
-          <text x="55" y="14" text-anchor="middle" class="t">Raw MJPEG</text>
-          <text x="55" y="25" text-anchor="middle" class="s">/stream/raw · /stream/bg</text>
-          <text x="55" y="35" text-anchor="middle" class="s">Operator · Vision Feed</text>
-        </g>
-
-        <!-- ── Block: BG Subtractor ── -->
-        <g class="s-blk" transform="translate(140,116)">
-          <rect x="0" y="0" width="112" height="44"/>
-          <text x="56" y="14" text-anchor="middle" class="t">BG Subtractor</text>
-          <text x="56" y="25" text-anchor="middle" class="s">α = 0.05 · thresh = 25</text>
-          <text x="56" y="35" text-anchor="middle" class="s">Running average model</text>
-        </g>
-
-        <!-- BG Sub → join → Motion Detector -->
-        <line class="s-conn d1" x1="196" y1="160" x2="196" y2="177"/>
-        <line class="s-conn"    x1="130" y1="177" x2="196" y2="177"/>
-        <line class="s-conn d2" x1="130" y1="177" x2="130" y2="193"/>
-
-        <!-- ── Block: Ghost Detects ── -->
-        <g class="s-blk" transform="translate(8,208)">
-          <rect x="0" y="0" width="110" height="44"/>
-          <text x="55" y="14" text-anchor="middle" class="t">Ghost Detects</text>
-          <text x="55" y="25" text-anchor="middle" class="s">5–10s interval · 50% chance</text>
-          <text x="55" y="35" text-anchor="middle" class="s">5s lifetime · TGT-002+</text>
-        </g>
-
-        <!-- ── Block: Motion Detector ── -->
-        <g class="s-blk" transform="translate(55,193)">
-          <rect x="0" y="0" width="150" height="44"/>
-          <text x="75" y="14" text-anchor="middle" class="t">Motion Detector</text>
-          <text x="75" y="25" text-anchor="middle" class="s">thresh=15 · merge_dist=20px</text>
-          <text x="75" y="35" text-anchor="middle" class="s">Frame diff · blob merge</text>
-        </g>
-
-        <!-- Ghost detects merge line into SSE -->
-        <line class="s-conn d3" x1="63"  y1="252" x2="63"  y2="275"/>
-        <line class="s-conn"    x1="63"  y1="275" x2="130" y2="275"/>
-        <line class="s-conn d1" x1="130" y1="237" x2="130" y2="275"/>
-        <line class="s-conn d2" x1="130" y1="275" x2="130" y2="290"/>
-
-        <!-- ── Block: SSE Stream ── -->
-        <g class="s-blk" transform="translate(55,290)">
-          <rect x="0" y="0" width="150" height="44"/>
-          <text x="75" y="14" text-anchor="middle" class="t">SSE Stream</text>
-          <text x="75" y="25" text-anchor="middle" class="s">/events/stream · ~15 fps</text>
-          <text x="75" y="35" text-anchor="middle" class="s">detections + viewport shifts</text>
-        </g>
-
-        <!-- SSE → fork → Map + Operator -->
-        <line class="s-conn fast"    x1="130" y1="334" x2="130" y2="352"/>
-        <line class="s-conn fast"    x1="65"  y1="352" x2="195" y2="352"/>
-        <line class="s-conn fast d1" x1="65"  y1="352" x2="65"  y2="368"/>
-        <line class="s-conn fast d2" x1="195" y1="352" x2="195" y2="368"/>
-
-        <!-- ── Block: Map View ── -->
-        <g class="s-blk" transform="translate(8,368)">
-          <rect x="0" y="0" width="110" height="46"/>
-          <text x="55" y="14" text-anchor="middle" class="t">Map View</text>
-          <text x="55" y="25" text-anchor="middle" class="s">Globe · Leaflet hybrid</text>
-          <text x="55" y="35" text-anchor="middle" class="s">Geo-referenced detects</text>
-        </g>
-
-        <!-- ── Block: Operator View ── -->
-        <g class="s-blk" transform="translate(140,368)">
-          <rect x="0" y="0" width="112" height="46"/>
-          <text x="56" y="14" text-anchor="middle" class="t">Operator View</text>
-          <text x="56" y="25" text-anchor="middle" class="s">FP-1 · FP-2 · FP-3</text>
-          <text x="56" y="35" text-anchor="middle" class="s">Metrics · Alert system</text>
-        </g>
-      </svg>
 
       <!-- ══ Marine mode diagram ══ (hidden by default) -->
       <svg id="diag-marine" viewBox="0 0 260 420" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="display:none;">
@@ -629,19 +516,17 @@
   });
 
   // ── Diagram mode toggle ────────────────────────────────────────────────────
-  const diagSynth  = document.getElementById('diag-synthetic');
   const diagAdsb   = document.getElementById('diag-adsb');
   const diagMarine = document.getElementById('diag-marine');
   const diagHeader = document.getElementById('diag-header');
 
-  let diagMode = 'synthetic';
+  let diagMode = 'idle';
 
   function setDiagMode(mode) {
     if (mode === diagMode) return;
     diagMode = mode;
-    diagSynth.style.display  = mode === 'synthetic' ? 'block' : 'none';
-    diagAdsb.style.display   = mode === 'adsb'      ? 'block' : 'none';
-    diagMarine.style.display = mode === 'marine'    ? 'block' : 'none';
+    diagAdsb.style.display   = mode === 'adsb'   ? 'block' : 'none';
+    diagMarine.style.display = mode === 'marine' ? 'block' : 'none';
     if (mode === 'adsb') {
       diagHeader.textContent = 'Air Traffic Architecture';
       diagHeader.style.color = '#0a3a4a';
@@ -664,7 +549,7 @@
       const marine = await marineRes.json();
       if (marine.active)    setDiagMode('marine');
       else if (adsb.active) setDiagMode('adsb');
-      else                  setDiagMode('synthetic');
+      else                  setDiagMode('idle');
     } catch (_) {}
   }
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrackVision — Vision Feed</title>
+  <title>TrackAware — Vision Feed</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -79,31 +79,6 @@
       color: #666; white-space: nowrap; min-width: 120px;
     }
     .status-text.active { color: #4caf50; }
-
-    /* ── Synthetic feed ── */
-    .feed-area { flex: 1; display: flex; align-items: stretch; overflow: hidden; }
-    .feed-panel {
-      flex: 1; display: flex; flex-direction: column;
-      border-right: 1px solid #1a1a1a;
-    }
-    .feed-panel:last-child { border-right: none; }
-    .feed-header {
-      padding: 8px 14px; border-bottom: 1px solid #141414;
-      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-    }
-    .feed-title { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: #888; }
-    .feed-scenario { font-size: 0.58rem; letter-spacing: 0.08em; color: #777; }
-    .feed-live {
-      font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
-      color: #4caf50; display: flex; align-items: center; gap: 6px;
-    }
-    .live-dot {
-      width: 6px; height: 6px; border-radius: 50%; background: #4caf50;
-      animation: pulse 1.2s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-    .feed-viewport { flex: 1; overflow: hidden; line-height: 0; background: #000; }
-    .feed-viewport img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
     /* ── Air Traffic panel ── */
     .at-panel {
@@ -267,26 +242,14 @@
 <div class="classif-banner bottom">UNCLASSIFIED // SIMULATION // NOT FOR OPERATIONAL USE</div>
 
 <header>
-  <h1>TrackVision &mdash; Vision Feed</h1>
+  <h1>TrackAware &mdash; Vision Feed</h1>
 
   <div class="ctrl-bar">
     <span class="bar-label">Mode</span>
     <select id="mode-select" onchange="setMode(this.value)">
-      <option value="synthetic">Synthetic Imagery</option>
       <option value="adsb">Air Traffic</option>
       <option value="marine">Ocean Traffic</option>
     </select>
-  </div>
-
-  <div class="ctrl-bar" id="scenario-bar">
-    <span class="bar-label">Scenario</span>
-    <select id="scenario-select">
-      <option value="circular_orbit">Circular Orbit</option>
-      <option value="square_pattern">Square Pattern</option>
-      <option value="tracking">Tracking Scenario</option>
-    </select>
-    <button class="run-btn" id="run-btn" onclick="runScenario()">Run</button>
-    <span class="status-text" id="status-text">Ready</span>
   </div>
 
   <div class="mission-info">
@@ -294,31 +257,6 @@
     <span class="mission-elapsed" id="mission-elapsed">00:00:00</span>
   </div>
 </header>
-
-<!-- Synthetic feed -->
-<div class="feed-area" id="feed-area">
-  <div class="feed-panel">
-    <div class="feed-header">
-      <div style="display:flex;flex-direction:column;gap:2px;">
-        <span class="feed-title">Raw Feed</span>
-        <span class="feed-scenario" id="label-raw">—</span>
-      </div>
-      <span class="feed-live"><div class="live-dot"></div>Live</span>
-    </div>
-    <div class="feed-viewport"><img src="/stream/raw" alt="raw feed"></div>
-  </div>
-
-  <div class="feed-panel">
-    <div class="feed-header">
-      <div style="display:flex;flex-direction:column;gap:2px;">
-        <span class="feed-title">Background Subtraction</span>
-        <span class="feed-scenario" id="label-bg">—</span>
-      </div>
-      <span class="feed-live"><div class="live-dot"></div>Live</span>
-    </div>
-    <div class="feed-viewport"><img src="/stream/bg" alt="background subtraction"></div>
-  </div>
-</div>
 
 <!-- Air Traffic panel -->
 <div class="at-panel" id="at-panel">
@@ -456,42 +394,23 @@
   const GLENDALE    = { lat: 34.1425, lon: -118.2551 };
 
   // ── State ──────────────────────────────────────────────────────────────────
-  let currentMode      = 'synthetic';
-  let adsbActive       = false;
-  let adsbPollTimer    = null;
-  let adsbFollowIcao   = null;
-  let filtersApplied   = false;
-  let marineActive     = false;
-  let marinePollTimer  = null;
-  let marineFollowMmsi = null;
+  let currentMode          = 'adsb';
+  let adsbActive           = false;
+  let adsbPollTimer        = null;
+  let adsbFollowIcao       = null;
+  let filtersApplied       = false;
+  let marineActive         = false;
+  let marinePollTimer      = null;
+  let marineFollowMmsi     = null;
   let marineFiltersApplied = false;
 
   // ── Mode switching ─────────────────────────────────────────────────────────
   function setMode(mode) {
     currentMode = mode;
-
-    // Hide all panels first
-    document.getElementById('feed-area').style.display  = 'none';
-    document.getElementById('scenario-bar').style.display = 'none';
     document.getElementById('at-panel').classList.remove('active');
     document.getElementById('marine-panel').classList.remove('active');
 
-    if (mode === 'synthetic') {
-      document.getElementById('scenario-bar').style.display = '';
-      document.getElementById('feed-area').style.display    = '';
-      stopADSBPoll();
-      stopMarinePoll();
-      if (adsbActive) {
-        adsbActive = false;
-        fetch('/adsb/mode', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ active: false }) });
-      }
-      if (marineActive) {
-        marineActive = false;
-        fetch('/marine/mode', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ active: false }) });
-      }
-    } else if (mode === 'adsb') {
+    if (mode === 'adsb') {
       document.getElementById('at-panel').classList.add('active');
       stopMarinePoll();
       if (marineActive) {
@@ -902,48 +821,8 @@
     }
   }
 
-  // ── Synthetic scenario controls ────────────────────────────────────────────
-  const LABELS = {
-    circular_orbit: 'Circular Orbit',
-    square_pattern: 'Square Pattern',
-    tracking:       'Tracking Scenario',
-  };
-
-  function setStatus(text, active) {
-    const el = document.getElementById('status-text');
-    el.textContent = text;
-    el.classList.toggle('active', !!active);
-  }
-
-  function setActiveScenario(key) {
-    const label = LABELS[key] || key;
-    document.getElementById('label-raw').textContent = label;
-    document.getElementById('label-bg').textContent  = label;
-    document.getElementById('scenario-select').value = key;
-    setStatus(`Running: ${label}`, true);
-  }
-
-  async function runScenario() {
-    const key = document.getElementById('scenario-select').value;
-    setStatus('Sending...', false);
-    try {
-      const res = await fetch('/scenario', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scenario: key }),
-      });
-      if (res.ok) setActiveScenario(key);
-      else         setStatus('Server error', false);
-    } catch (e) {
-      setStatus('Network error', false);
-    }
-  }
-
   // ── Init ──────────────────────────────────────────────────────────────────
-  fetch('/scenario')
-    .then(r => r.json())
-    .then(d => setActiveScenario(d.scenario))
-    .catch(() => setStatus('Ready', false));
+  setMode('adsb');
 
   // ── Mission elapsed timer ─────────────────────────────────────────────────
   (function() {
