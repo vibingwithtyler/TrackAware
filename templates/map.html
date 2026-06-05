@@ -477,6 +477,20 @@
       if (v.name) { ctx.font = '9px Courier New'; ctx.fillStyle = color; ctx.fillText(v.name, vx + 8, vy + 3); }
     });
 
+    // Selection ring
+    if (_cardId) {
+      const pool  = _cardType === 'adsb' ? adsbFlights : marineVessels;
+      const key   = _cardType === 'adsb' ? 'icao24' : 'mmsi';
+      const tgt   = pool.find(t => t[key] === _cardId);
+      if (tgt) {
+        const sp = projection([tgt.lon, tgt.lat]);
+        if (sp) {
+          ctx.beginPath(); ctx.arc(sp[0], sp[1], 11, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.5; ctx.stroke();
+        }
+      }
+    }
+
     ctx.beginPath(); path({ type: 'Sphere' });
     ctx.strokeStyle = 'rgba(25,65,120,0.35)'; ctx.lineWidth = 4; ctx.stroke();
     ctx.strokeStyle = 'rgba(30,60,100,0.7)';  ctx.lineWidth = 1; ctx.stroke();
@@ -577,22 +591,24 @@
     if (mode === 'map' && leafMap.getZoom() < MAP_TO_GLOBE) switchToGlobe(leafMap);
   });
 
-  function makeFlightIcon(heading, locked) {
+  function makeFlightIcon(heading, locked, selected = false) {
     const color = locked ? '#4caf50' : '#00bcd4';
-    const h = heading || 0;
+    const h     = heading || 0;
+    const ring  = selected ? `<circle cx="0" cy="0" r="10" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.85"/>` : '';
     return L.divIcon({
       className: '',
-      html: `<svg width="16" height="16" viewBox="-8 -8 16 16" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;transform:rotate(${h}deg)"><polygon points="0,-7 -4,5 4,5" fill="${color}"/></svg>`,
+      html: `<svg width="16" height="16" viewBox="-8 -8 16 16" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;transform:rotate(${h}deg)">${ring}<polygon points="0,-7 -4,5 4,5" fill="${color}"/></svg>`,
       iconSize: [16, 16], iconAnchor: [8, 8],
     });
   }
 
-  function makeVesselIcon(heading, locked) {
+  function makeVesselIcon(heading, locked, selected = false) {
     const color = locked ? '#4caf50' : '#ff9800';
-    const h = (heading != null) ? heading : 0;
+    const h     = (heading != null) ? heading : 0;
+    const ring  = selected ? `<circle cx="0" cy="0" r="9" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.85"/>` : '';
     return L.divIcon({
       className: '',
-      html: `<svg width="14" height="14" viewBox="-7 -7 14 14" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;transform:rotate(${h}deg)"><polygon points="0,-6 5,0 0,6 -5,0" fill="${color}"/></svg>`,
+      html: `<svg width="14" height="14" viewBox="-7 -7 14 14" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;transform:rotate(${h}deg)">${ring}<polygon points="0,-6 5,0 0,6 -5,0" fill="${color}"/></svg>`,
       iconSize: [14, 14], iconAnchor: [7, 7],
     });
   }
@@ -696,7 +712,7 @@
     const seen = new Set(adsbFlights.map(f => f.icao24));
     flightMarkers.forEach((m, icao) => { if (!seen.has(icao)) { flightLayer.removeLayer(m); flightMarkers.delete(icao); } });
     adsbFlights.forEach(f => {
-      const icon = makeFlightIcon(f.heading, f.icao24 === adsbFollowIcao);
+      const icon = makeFlightIcon(f.heading, f.icao24 === adsbFollowIcao, _cardType === 'adsb' && f.icao24 === _cardId);
       if (flightMarkers.has(f.icao24)) flightMarkers.get(f.icao24).setLatLng([f.lat, f.lon]).setIcon(icon);
       else {
         const mk = L.marker([f.lat, f.lon], { icon }).addTo(flightLayer);
@@ -748,7 +764,7 @@
     vesselMarkers.forEach((m, mmsi) => { if (!seen.has(mmsi)) { vesselLayer.removeLayer(m); vesselMarkers.delete(mmsi); } });
     marineVessels.forEach(v => {
       const hdg  = v.heading != null ? v.heading : v.cog;
-      const icon = makeVesselIcon(hdg, v.mmsi === marineFollowMmsi);
+      const icon = makeVesselIcon(hdg, v.mmsi === marineFollowMmsi, _cardType === 'marine' && v.mmsi === _cardId);
       if (vesselMarkers.has(v.mmsi)) vesselMarkers.get(v.mmsi).setLatLng([v.lat, v.lon]).setIcon(icon);
       else {
         const mk = L.marker([v.lat, v.lon], { icon }).addTo(vesselLayer);
@@ -857,8 +873,25 @@
   resizeGlobe();
 
   // ── Target info card ─────────────────────────────────────────────────────
+  function _refreshMarker(type, id) {
+    if (type === 'adsb') {
+      const f = adsbFlights.find(f => f.icao24 === id);
+      if (f && flightMarkers.has(id))
+        flightMarkers.get(id).setIcon(makeFlightIcon(f.heading, f.icao24 === adsbFollowIcao, _cardType === 'adsb' && id === _cardId));
+    } else {
+      const v = marineVessels.find(v => v.mmsi === id);
+      if (v && vesselMarkers.has(id))
+        vesselMarkers.get(id).setIcon(makeVesselIcon(v.heading != null ? v.heading : v.cog, v.mmsi === marineFollowMmsi, _cardType === 'marine' && id === _cardId));
+    }
+  }
+
   function showTargetCard(type, id) {
+    const prevType = _cardType, prevId = _cardId;
     _cardType = type; _cardId = id;
+    // Deselect old marker, select new one
+    if (prevId && (prevType !== type || prevId !== id)) _refreshMarker(prevType, prevId);
+    _refreshMarker(type, id);
+    if (mode === 'globe') draw();
 
     const card   = document.getElementById('target-card');
     const badge  = document.getElementById('tc-badge');
@@ -914,7 +947,10 @@
 
   function closeTargetCard() {
     document.getElementById('target-card').classList.remove('visible');
+    const prevType = _cardType, prevId = _cardId;
     _cardType = null; _cardId = null;
+    if (prevId) _refreshMarker(prevType, prevId);
+    if (mode === 'globe') draw();
   }
 
   async function lockFromCard() {
