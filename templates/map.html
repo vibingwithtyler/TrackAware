@@ -33,6 +33,13 @@
     .classif-banner.top    { top: 0;    border-bottom: 1px solid #0a2a0a; }
     .classif-banner.bottom { bottom: 0; border-top:    1px solid #0a2a0a; }
 
+    header {
+      display: flex; align-items: center; gap: 24px;
+      padding: 10px 20px; border-bottom: 1px solid #1a1a1a;
+      flex-shrink: 0;
+    }
+    header h1 { font-size: 0.9rem; letter-spacing: 0.2em; text-transform: uppercase; color: #666; }
+
     .mission-info {
       margin-left: auto; display: flex; flex-direction: column;
       align-items: flex-end; gap: 1px;
@@ -40,142 +47,170 @@
     .mission-id      { font-size: 0.6rem; letter-spacing: 0.15em; color: #4caf50; text-transform: uppercase; }
     .mission-elapsed { font-size: 0.62rem; letter-spacing: 0.08em; color: #444; font-variant-numeric: tabular-nums; }
 
-    header {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      padding: 12px 20px;
-      border-bottom: 1px solid #1e1e1e;
-      flex-shrink: 0;
-    }
-    header h1 { font-size: 0.9rem; letter-spacing: 0.2em; text-transform: uppercase; color: #666; }
-
-    .tabs { display: flex; gap: 4px; }
-    .tab {
-      background: none; border: 1px solid #2a2a2a; color: #555;
-      font-family: 'Courier New', monospace; font-size: 0.72rem;
-      letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 14px;
-      cursor: pointer; transition: border-color 0.15s, color 0.15s;
-    }
-    .tab:hover  { border-color: #444; color: #aaa; }
-    .tab.active { border-color: #4caf50; color: #4caf50; }
-
-    .tab-content { display: none; flex: 1; overflow: hidden; }
-    .tab-content.active { display: flex; }
-
-    /* ── Map View tab ── */
-    #tab-map { flex-direction: row; }
-
-    /* ── Both map containers ── */
-    #map-main, #map-vid {
+    /* ── Map container ── */
+    #map-container {
       flex: 1;
-      overflow: hidden;
       position: relative;
+      overflow: hidden;
       background: #050c14;
     }
 
-    .leaf-pane {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      opacity: 0;
-      pointer-events: none;
+    #leaf-map {
+      position: absolute; inset: 0;
+      z-index: 1; opacity: 0; pointer-events: none;
       transition: opacity 0.25s;
     }
-    .leaf-pane.visible { opacity: 1; pointer-events: auto; }
+    #leaf-map.visible { opacity: 1; pointer-events: auto; }
 
     #globe-canvas {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      cursor: grab;
-      transition: opacity 0.25s;
-      display: block;
+      position: absolute; inset: 0;
+      z-index: 2; cursor: grab;
+      transition: opacity 0.25s; display: block;
     }
     #globe-canvas.hidden { opacity: 0; pointer-events: none; }
 
+    /* Leaflet overrides */
     .leaflet-control-attribution {
-      background: rgba(10,10,10,0.7) !important;
-      color: #333 !important;
-      font-size: 0.5rem !important;
+      background: rgba(10,10,10,0.7) !important; color: #333 !important; font-size: 0.5rem !important;
     }
     .leaflet-control-attribution a { color: #444 !important; }
-    .leaflet-control-zoom a {
-      background: #111 !important; color: #555 !important;
-      border-color: #222 !important;
-    }
+    .leaflet-control-zoom a { background: #111 !important; color: #555 !important; border-color: #222 !important; }
     .leaflet-control-zoom a:hover { background: #1a1a1a !important; color: #888 !important; }
 
-    /* ── Sidebar ── */
-    .sidebar {
-      width: 240px; flex-shrink: 0; border-left: 1px solid #1e1e1e;
-      padding: 20px 16px; display: flex; flex-direction: column; gap: 14px;
-    }
-    .sidebar h2 { font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: #555; }
-    .field { display: flex; flex-direction: column; gap: 5px; }
-    .field label { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: #555; }
-    .field input {
-      background: #111; border: 1px solid #2a2a2a; color: #ddd;
-      font-family: 'Courier New', monospace; font-size: 0.8rem;
-      padding: 6px 8px; width: 100%; outline: none; transition: border-color 0.15s;
-    }
-    .field input:focus { border-color: #4caf50; }
-    .apply-btn {
-      background: none; border: 1px solid #4caf50; color: #4caf50;
-      font-family: 'Courier New', monospace; font-size: 0.72rem;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      padding: 7px 0; cursor: pointer; width: 100%; transition: background 0.15s;
-    }
-    .apply-btn:hover { background: #4caf5018; }
-    .coord-display { font-size: 0.65rem; color: #444; letter-spacing: 0.05em; line-height: 1.6; }
-    .zoom-hint { font-size: 0.58rem; color: #252525; letter-spacing: 0.06em; line-height: 1.7; }
-
-    /* ── Zoom overlay buttons ── */
-    .zoom-controls {
-      position: absolute;
-      top: 12px; left: 12px;
-      z-index: 20;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .zoom-btn {
-      width: 28px; height: 28px;
-      background: rgba(10,10,10,0.88);
-      border: 1px solid #2a2a2a;
-      color: #666;
-      font-family: 'Courier New', monospace;
-      font-size: 1.05rem; line-height: 1;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: border-color 0.15s, color 0.15s;
-      user-select: none;
-    }
-    .zoom-btn:hover  { border-color: #4caf50; color: #4caf50; }
-    .zoom-btn:active { background: rgba(76,175,80,0.1); }
-    #mode-badge {
-      font-size: 0.55rem; letter-spacing: 0.15em; text-transform: uppercase;
-      color: #2a2a2a; border: 1px solid #1a1a1a; padding: 3px 8px; text-align: center;
-    }
-
-    /* ── Live tab ── */
-    #tab-vid { flex-direction: row; position: relative; }
-    #map-vid  { flex: 1; }
-
+    /* ── HUD ── */
     .hud {
-      position: absolute; top: 12px;
-      left: 50%; transform: translateX(-50%);
-      display: flex; gap: 12px; align-items: center;
-      background: #0d0d0dee; border: 1px solid #2a2a2a;
-      font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
-      color: #555; padding: 5px 16px; pointer-events: none; z-index: 1000;
-      white-space: nowrap;
+      position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 10px; align-items: center;
+      background: rgba(13,13,13,0.92); border: 1px solid #2a2a2a;
+      font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: #555; padding: 5px 14px; z-index: 1000;
+      pointer-events: none; white-space: nowrap;
     }
     .hud-dot {
       width: 7px; height: 7px; border-radius: 50%; background: #4caf50;
-      animation: pulse 1.2s ease-in-out infinite;
+      animation: pulse 1.4s ease-in-out infinite;
     }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+    #map-lock-label { margin-left: 4px; }
+
+    /* Release buttons */
+    .release-float {
+      position: absolute; top: 48px; left: 50%; transform: translateX(-50%);
+      background: none; font-family: 'Courier New', monospace;
+      font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase;
+      padding: 5px 16px; cursor: pointer; z-index: 1000; pointer-events: auto;
+      display: none;
+    }
+    #map-release-btn       { border: 1px solid #f44336; color: #f44336; }
+    #map-marine-release-btn { border: 1px solid #ff9800; color: #ff9800; top: 48px; }
+
+    /* ── Zoom buttons ── */
+    .zoom-controls {
+      position: absolute; top: 12px; left: 12px;
+      z-index: 1000; display: flex; flex-direction: column; gap: 2px;
+    }
+    .zoom-btn {
+      width: 28px; height: 28px;
+      background: rgba(10,10,10,0.88); border: 1px solid #2a2a2a; color: #666;
+      font-family: 'Courier New', monospace; font-size: 1.05rem; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s, color 0.15s; user-select: none;
+    }
+    .zoom-btn:hover  { border-color: #4caf50; color: #4caf50; }
+    .zoom-btn:active { background: rgba(76,175,80,0.1); }
+
+    /* ── Feed overlay panel ── */
+    .feed-panel {
+      position: absolute; top: 12px; right: 12px;
+      z-index: 1000; width: 240px;
+      background: rgba(10,10,10,0.92);
+      border: 1px solid #222;
+      display: flex; flex-direction: column;
+    }
+
+    .fp-section {
+      padding: 10px 14px;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .fp-section:last-child { border-bottom: none; }
+
+    .fp-title {
+      font-size: 0.5rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: #333; margin-bottom: 10px;
+    }
+
+    /* Feed toggle rows */
+    .feed-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 0;
+    }
+    .feed-row + .feed-row { border-top: 1px solid #141414; }
+
+    .feed-icon { font-size: 0.75rem; width: 16px; text-align: center; flex-shrink: 0; }
+    .feed-label {
+      flex: 1; font-size: 0.62rem; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #555;
+    }
+    .feed-count {
+      font-size: 0.58rem; letter-spacing: 0.05em; color: #2a2a2a;
+      min-width: 28px; text-align: right;
+    }
+    .feed-count.active-adsb  { color: #00bcd4; }
+    .feed-count.active-marine { color: #ff9800; }
+
+    /* Toggle switch */
+    .tgl { position: relative; width: 34px; height: 18px; flex-shrink: 0; }
+    .tgl input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .tgl-track {
+      position: absolute; inset: 0; border-radius: 9px;
+      background: #1a1a1a; border: 1px solid #2a2a2a;
+      transition: background 0.2s, border-color 0.2s; cursor: pointer;
+    }
+    .tgl-thumb {
+      position: absolute; top: 3px; left: 3px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #3a3a3a; transition: transform 0.2s, background 0.2s;
+    }
+    .tgl input:checked ~ .tgl-track { border-color: var(--tgl-color, #4caf50); }
+    .tgl input:checked ~ .tgl-track .tgl-thumb {
+      transform: translateX(16px); background: var(--tgl-color, #4caf50);
+    }
+    .tgl.adsb-tgl   { --tgl-color: #00bcd4; }
+    .tgl.marine-tgl { --tgl-color: #ff9800; }
+
+    /* Camera coords */
+    .fp-coord-row {
+      display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+    }
+    .fp-coord-label {
+      font-size: 0.5rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: #333; width: 22px; flex-shrink: 0;
+    }
+    .fp-coord-input {
+      flex: 1; background: #0a0a0a; border: 1px solid #1e1e1e; color: #888;
+      font-family: 'Courier New', monospace; font-size: 0.65rem;
+      padding: 4px 6px; outline: none; transition: border-color 0.15s;
+    }
+    .fp-coord-input:focus { border-color: #2a2a2a; color: #ccc; }
+    .fp-apply {
+      width: 100%; background: none; border: 1px solid #2a2a2a; color: #555;
+      font-family: 'Courier New', monospace; font-size: 0.58rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 5px 0; cursor: pointer; margin-top: 2px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .fp-apply:hover { border-color: #4caf50; color: #4caf50; }
+
+    .fp-coord-display {
+      font-size: 0.55rem; color: #2a2a2a; letter-spacing: 0.04em;
+      margin-top: 6px; line-height: 1.5;
+    }
+
+    .fp-mode-badge {
+      font-size: 0.5rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: #222; border: 1px solid #1a1a1a; padding: 2px 6px;
+      display: inline-block; margin-top: 5px;
+    }
   </style>
 </head>
 <body>
@@ -184,60 +219,78 @@
 
 <header>
   <h1>TrackAware</h1>
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('vid', event)">Live</button>
-    <button class="tab"        onclick="switchTab('map', event)">Map View</button>
-  </div>
   <div class="mission-info">
     <span class="mission-id">{{ mission_id }}</span>
     <span class="mission-elapsed" id="mission-elapsed">00:00:00</span>
   </div>
 </header>
 
-<!-- Map View tab -->
-<div id="tab-map" class="tab-content">
-  <div id="map-main">
-    <div id="leaf-main" class="leaf-pane"></div>
-    <!-- #globe-canvas placed here by JS -->
-    <div class="zoom-controls">
-      <button class="zoom-btn" onclick="mapZoomIn()">+</button>
-      <button class="zoom-btn" onclick="mapZoomOut()">&minus;</button>
-    </div>
-  </div>
-  <div class="sidebar">
-    <h2>Camera Location</h2>
-    <div class="field">
-      <label>Latitude</label>
-      <input id="inp-lat" type="number" step="0.0001" value="34.1425">
-    </div>
-    <div class="field">
-      <label>Longitude</label>
-      <input id="inp-lon" type="number" step="0.0001" value="-118.2551">
-    </div>
-    <button class="apply-btn" onclick="applyCoords()">Apply</button>
-    <div class="coord-display" id="coord-display">Glendale, CA</div>
-    <div id="mode-badge">Globe</div>
-    <div class="zoom-hint">Drag to rotate · Scroll to zoom<br>Tiles load when zoomed in</div>
-  </div>
-</div>
+<div id="map-container">
 
-<!-- Live tab -->
-<div id="tab-vid" class="tab-content active">
+  <!-- Leaflet tile map -->
+  <div id="leaf-map"></div>
+
+  <!-- Zoom controls -->
+  <div class="zoom-controls">
+    <button class="zoom-btn" onclick="mapZoomIn()">+</button>
+    <button class="zoom-btn" onclick="mapZoomOut()">&minus;</button>
+  </div>
+
+  <!-- HUD -->
   <div class="hud">
     <div class="hud-dot"></div>
     Live
-    <span id="map-lock-label" style="color:#4caf50;margin-left:10px;"></span>
+    <span id="map-lock-label"></span>
   </div>
-  <button id="map-release-btn" onclick="mapReleaseFollow()" style="display:none;position:absolute;top:50px;left:50%;transform:translateX(-50%);background:none;border:1px solid #f44336;color:#f44336;font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;padding:5px 16px;cursor:pointer;z-index:1000;pointer-events:auto;">⊗ Release Target</button>
-  <button id="map-marine-release-btn" onclick="mapMarineReleaseFollow()" style="display:none;position:absolute;top:50px;left:50%;transform:translateX(-50%);background:none;border:1px solid #ff9800;color:#ff9800;font-family:'Courier New',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;padding:5px 16px;cursor:pointer;z-index:1000;pointer-events:auto;">⊗ Release Target</button>
-  <div id="map-vid">
-    <div id="leaf-vid" class="leaf-pane"></div>
-    <!-- canvas also placed here on tab switch -->
-    <div class="zoom-controls">
-      <button class="zoom-btn" onclick="mapZoomIn()">+</button>
-      <button class="zoom-btn" onclick="mapZoomOut()">&minus;</button>
+
+  <!-- Release buttons -->
+  <button id="map-release-btn"        class="release-float" onclick="mapReleaseFollow()">⊗ Release Target</button>
+  <button id="map-marine-release-btn" class="release-float" onclick="mapMarineReleaseFollow()">⊗ Release Target</button>
+
+  <!-- Feed overlay panel -->
+  <div class="feed-panel">
+
+    <div class="fp-section">
+      <div class="fp-title">Feeds</div>
+
+      <div class="feed-row">
+        <span class="feed-icon">✈</span>
+        <span class="feed-label">Air Traffic</span>
+        <span class="feed-count" id="adsb-count">—</span>
+        <label class="tgl adsb-tgl">
+          <input type="checkbox" id="adsb-toggle" onchange="toggleADSB(this.checked)">
+          <div class="tgl-track"><div class="tgl-thumb"></div></div>
+        </label>
+      </div>
+
+      <div class="feed-row">
+        <span class="feed-icon">⚓</span>
+        <span class="feed-label">Ocean Traffic</span>
+        <span class="feed-count" id="marine-count">—</span>
+        <label class="tgl marine-tgl">
+          <input type="checkbox" id="marine-toggle" onchange="toggleMarine(this.checked)">
+          <div class="tgl-track"><div class="tgl-thumb"></div></div>
+        </label>
+      </div>
     </div>
+
+    <div class="fp-section">
+      <div class="fp-title">Camera</div>
+      <div class="fp-coord-row">
+        <span class="fp-coord-label">Lat</span>
+        <input id="inp-lat" class="fp-coord-input" type="number" step="0.0001" value="34.1425">
+      </div>
+      <div class="fp-coord-row">
+        <span class="fp-coord-label">Lon</span>
+        <input id="inp-lon" class="fp-coord-input" type="number" step="0.0001" value="-118.2551">
+      </div>
+      <button class="fp-apply" onclick="applyCoords()">Apply</button>
+      <div class="fp-coord-display" id="coord-display">Glendale, CA</div>
+      <div class="fp-mode-badge" id="mode-badge">Globe</div>
+    </div>
+
   </div>
+
 </div>
 
 <script>
@@ -245,23 +298,20 @@
   const STORAGE_KEY  = 'trackvision_camera_coords';
   const BOX_KM       = 5;
   const GLENDALE     = { lat: 34.1425, lon: -118.2551 };
-
-  // Globe ↔ map mode thresholds
   const GLOBE_TO_MAP = 14000;
   const MAP_TO_GLOBE = 7;
 
   // ── State ──────────────────────────────────────────────────────────────────
   let currentCoords  = loadCoords();
   let mode           = 'globe';
-  let activeTab      = 'vid';
   let globeAnimating = false;
+  let adsbEnabled    = false;
+  let marineEnabled  = false;
 
-  // ADS-B state
   let adsbFlights    = [];
   let adsbFollowIcao = null;
   const flightMarkers = new Map();
 
-  // Marine state
   let marineVessels    = [];
   let marineFollowMmsi = null;
   const vesselMarkers  = new Map();
@@ -293,6 +343,7 @@
   // ── D3 Globe ───────────────────────────────────────────────────────────────
   const canvas = document.createElement('canvas');
   canvas.id = 'globe-canvas';
+  document.getElementById('map-container').appendChild(canvas);
 
   const projection = d3.geoOrthographic()
     .clipAngle(90).precision(0.3)
@@ -314,14 +365,8 @@
     ctx.beginPath(); path(graticuleData);
     ctx.strokeStyle = 'rgba(15,35,55,0.7)'; ctx.lineWidth = 0.4; ctx.stroke();
 
-    if (landData) {
-      ctx.beginPath(); path(landData);
-      ctx.fillStyle = '#0d1a0e'; ctx.fill();
-    }
-    if (bordersData) {
-      ctx.beginPath(); path(bordersData);
-      ctx.strokeStyle = '#1a3040'; ctx.lineWidth = 0.5; ctx.stroke();
-    }
+    if (landData)    { ctx.beginPath(); path(landData);    ctx.fillStyle = '#0d1a0e'; ctx.fill(); }
+    if (bordersData) { ctx.beginPath(); path(bordersData); ctx.strokeStyle = '#1a3040'; ctx.lineWidth = 0.5; ctx.stroke(); }
 
     ctx.beginPath(); path(currentGeoBox);
     ctx.strokeStyle = '#2196f3'; ctx.lineWidth = 1.5; ctx.stroke();
@@ -336,49 +381,31 @@
       ctx.stroke();
     }
 
-    // ADS-B flights
     adsbFlights.forEach(f => {
       const p = projection([f.lon, f.lat]);
       if (!p) return;
       const [fx, fy] = p;
-      const locked   = f.icao24 === adsbFollowIcao;
-      const color    = locked ? '#4caf50' : '#00bcd4';
-      const hdgRad   = ((f.heading || 0) * Math.PI) / 180;
-      ctx.save();
-      ctx.translate(fx, fy);
-      ctx.rotate(hdgRad);
-      ctx.beginPath();
-      ctx.moveTo(0, -6); ctx.lineTo(-3.5, 4); ctx.lineTo(3.5, 4);
-      ctx.closePath();
-      ctx.fillStyle = color; ctx.fill();
-      ctx.restore();
-      if (f.callsign) {
-        ctx.font = '9px Courier New'; ctx.fillStyle = color;
-        ctx.fillText(f.callsign, fx + 8, fy + 3);
-      }
+      const locked = f.icao24 === adsbFollowIcao;
+      const color  = locked ? '#4caf50' : '#00bcd4';
+      const hdgRad = ((f.heading || 0) * Math.PI) / 180;
+      ctx.save(); ctx.translate(fx, fy); ctx.rotate(hdgRad);
+      ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(-3.5, 4); ctx.lineTo(3.5, 4);
+      ctx.closePath(); ctx.fillStyle = color; ctx.fill(); ctx.restore();
+      if (f.callsign) { ctx.font = '9px Courier New'; ctx.fillStyle = color; ctx.fillText(f.callsign, fx + 8, fy + 3); }
     });
 
-    // Marine vessels
     marineVessels.forEach(v => {
       const p = projection([v.lon, v.lat]);
       if (!p) return;
       const [vx, vy] = p;
-      const locked  = v.mmsi === marineFollowMmsi;
-      const color   = locked ? '#4caf50' : '#ff9800';
-      const hdg     = (v.heading !== null && v.heading !== undefined) ? v.heading : (v.cog || 0);
-      const hdgRad  = hdg * Math.PI / 180;
-      ctx.save();
-      ctx.translate(vx, vy);
-      ctx.rotate(hdgRad);
-      ctx.beginPath();
-      ctx.moveTo(0, -5); ctx.lineTo(4, 0); ctx.lineTo(0, 5); ctx.lineTo(-4, 0);
-      ctx.closePath();
-      ctx.fillStyle = color; ctx.fill();
-      ctx.restore();
-      if (v.name) {
-        ctx.font = '9px Courier New'; ctx.fillStyle = color;
-        ctx.fillText(v.name, vx + 8, vy + 3);
-      }
+      const locked = v.mmsi === marineFollowMmsi;
+      const color  = locked ? '#4caf50' : '#ff9800';
+      const hdg    = (v.heading != null) ? v.heading : (v.cog || 0);
+      const hdgRad = hdg * Math.PI / 180;
+      ctx.save(); ctx.translate(vx, vy); ctx.rotate(hdgRad);
+      ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(4, 0); ctx.lineTo(0, 5); ctx.lineTo(-4, 0);
+      ctx.closePath(); ctx.fillStyle = color; ctx.fill(); ctx.restore();
+      if (v.name) { ctx.font = '9px Courier New'; ctx.fillStyle = color; ctx.fillText(v.name, vx + 8, vy + 3); }
     });
 
     ctx.beginPath(); path({ type: 'Sphere' });
@@ -391,12 +418,8 @@
     if (!p) return;
     const w = p.clientWidth, h = p.clientHeight;
     if (!w || !h) return;
-    canvas.width  = w;
-    canvas.height = h;
-    if (!canvas._initScale) {
-      projection.scale(Math.min(w, h) * 0.44);
-      canvas._initScale = true;
-    }
+    canvas.width = w; canvas.height = h;
+    if (!canvas._initScale) { projection.scale(Math.min(w, h) * 0.44); canvas._initScale = true; }
     projection.translate([w / 2, h / 2]);
     draw();
   }
@@ -405,40 +428,28 @@
   let dragging = false, dragStart, rotStart;
   canvas.addEventListener('mousedown', e => {
     if (globeAnimating) return;
-    dragging = true; dragStart = [e.clientX, e.clientY];
-    rotStart = projection.rotate().slice();
+    dragging = true; dragStart = [e.clientX, e.clientY]; rotStart = projection.rotate().slice();
     canvas.style.cursor = 'grabbing';
   });
   window.addEventListener('mousemove', e => {
     if (!dragging) return;
     const s = projection.scale();
-    projection.rotate([
-      rotStart[0] + (e.clientX - dragStart[0]) * 90 / s,
-      rotStart[1] - (e.clientY - dragStart[1]) * 90 / s,
-    ]);
+    projection.rotate([rotStart[0] + (e.clientX - dragStart[0]) * 90 / s, rotStart[1] - (e.clientY - dragStart[1]) * 90 / s]);
     draw();
   });
   window.addEventListener('mouseup', () => { dragging = false; canvas.style.cursor = 'grab'; });
 
-  // Scroll — zoom or transition to Leaflet
   canvas.addEventListener('wheel', e => {
     e.preventDefault();
-    const newScale = Math.max(80, projection.scale() * (e.deltaY > 0 ? 0.85 : 1.18));
-    projection.scale(newScale);
-    if (newScale >= GLOBE_TO_MAP) {
-      switchToMap();
-    } else {
-      draw();
-    }
+    const ns = Math.max(80, projection.scale() * (e.deltaY > 0 ? 0.85 : 1.18));
+    projection.scale(ns);
+    if (ns >= GLOBE_TO_MAP) switchToMap(); else draw();
   }, { passive: false });
 
-  // Fly-to animation
   function flyTo(lat, lon) {
     globeAnimating = true; canvas.style.cursor = 'wait';
-    const r0 = projection.rotate(), r1 = [-lon, -lat, 0];
-    const s0 = projection.scale();
-    const regional = Math.min(canvas.width, canvas.height) * 3;
-    const s1 = s0 < regional ? regional : s0;
+    const r0 = projection.rotate(), r1 = [-lon, -lat, 0], s0 = projection.scale();
+    const s1 = Math.max(s0, Math.min(canvas.width, canvas.height) * 3);
     const iR = d3.interpolate(r0, r1), iS = d3.interpolateNumber(s0, s1);
     const dur = 1200; let t0 = null;
     (function step(ts) {
@@ -452,196 +463,172 @@
     })(performance.now());
   }
 
-  // World data
   d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json').then(world => {
     landData    = topojson.feature(world, world.objects.land);
     bordersData = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
     draw();
   });
 
-  // ── Leaflet maps ───────────────────────────────────────────────────────────
+  // ── Leaflet ───────────────────────────────────────────────────────────────
   const TILE_URL  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
   const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>';
 
-  const leafMain = L.map('leaf-main', { zoomControl: false });
-  const leafVid  = L.map('leaf-vid',  { zoomControl: false });
-  [leafMain, leafVid].forEach(m => L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19 }).addTo(m));
+  const leafMap = L.map('leaf-map', { zoomControl: false });
+  L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19 }).addTo(leafMap);
 
   const boxStyle = { color: '#2196f3', weight: 2, fillColor: '#2196f3', fillOpacity: 0.08 };
-  let rectMain = null, rectVid = null;
+  let rect = null;
 
-  const flightLayerMain = L.layerGroup().addTo(leafMain);
-  const flightLayerVid  = L.layerGroup().addTo(leafVid);
-  const vesselLayerMain = L.layerGroup().addTo(leafMain);
-  const vesselLayerVid  = L.layerGroup().addTo(leafVid);
+  const flightLayer = L.layerGroup().addTo(leafMap);
+  const vesselLayer = L.layerGroup().addTo(leafMap);
 
-  function makeVesselIcon(heading, locked) {
-    const color = locked ? '#4caf50' : '#ff9800';
-    const h     = (heading !== null && heading !== undefined) ? heading : 0;
-    return L.divIcon({
-      className: '',
-      html: `<svg width="14" height="14" viewBox="-7 -7 14 14" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;transform:rotate(${h}deg)">
-        <polygon points="0,-6 5,0 0,6 -5,0" fill="${color}"/>
-      </svg>`,
-      iconSize: [14, 14], iconAnchor: [7, 7],
-    });
-  }
+  leafMap.on('zoomend', () => {
+    if (mode === 'map' && leafMap.getZoom() < MAP_TO_GLOBE) switchToGlobe(leafMap);
+  });
 
   function makeFlightIcon(heading, locked) {
     const color = locked ? '#4caf50' : '#00bcd4';
-    const h     = heading || 0;
+    const h = heading || 0;
     return L.divIcon({
       className: '',
-      html: `<svg width="16" height="16" viewBox="-8 -8 16 16" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;transform:rotate(${h}deg)">
-        <polygon points="0,-7 -4,5 4,5" fill="${color}"/>
-      </svg>`,
+      html: `<svg width="16" height="16" viewBox="-8 -8 16 16" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;transform:rotate(${h}deg)"><polygon points="0,-7 -4,5 4,5" fill="${color}"/></svg>`,
       iconSize: [16, 16], iconAnchor: [8, 8],
+    });
+  }
+
+  function makeVesselIcon(heading, locked) {
+    const color = locked ? '#4caf50' : '#ff9800';
+    const h = (heading != null) ? heading : 0;
+    return L.divIcon({
+      className: '',
+      html: `<svg width="14" height="14" viewBox="-7 -7 14 14" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;transform:rotate(${h}deg)"><polygon points="0,-6 5,0 0,6 -5,0" fill="${color}"/></svg>`,
+      iconSize: [14, 14], iconAnchor: [7, 7],
     });
   }
 
   function updateLeafletBox(lat, lon, fit = false) {
     const bounds = leafBounds(lat, lon);
-    if (rectMain) leafMain.removeLayer(rectMain);
-    if (rectVid)  leafVid.removeLayer(rectVid);
-    rectMain = L.rectangle(bounds, boxStyle).addTo(leafMain);
-    rectVid  = L.rectangle(bounds, boxStyle).addTo(leafVid);
-    if (fit) {
-      leafMain.fitBounds(bounds, { padding: [40, 40] });
-      leafVid.fitBounds(bounds,  { padding: [40, 40] });
-    }
+    if (rect) leafMap.removeLayer(rect);
+    rect = L.rectangle(bounds, boxStyle).addTo(leafMap);
+    if (fit) leafMap.fitBounds(bounds, { padding: [40, 40] });
   }
 
-  // Zoom out in Leaflet → back to globe
-  [leafMain, leafVid].forEach(leaf => {
-    leaf.on('zoomend', () => {
-      if (mode === 'map' && leaf.getZoom() < MAP_TO_GLOBE) switchToGlobe(leaf);
-    });
-  });
-
-  // ── Mode switching ─────────────────────────────────────────────────────────
-  function d3ScaleToLeafZoom(scale) {
-    return Math.min(18, Math.max(1, Math.round(Math.log2(2 * Math.PI * scale / 256))));
-  }
-  function leafZoomToD3Scale(zoom) {
-    return 256 * Math.pow(2, zoom) / (2 * Math.PI);
-  }
+  // ── Globe ↔ Map switching ─────────────────────────────────────────────────
+  function d3ScaleToLeafZoom(s) { return Math.min(18, Math.max(1, Math.round(Math.log2(2 * Math.PI * s / 256)))); }
+  function leafZoomToD3Scale(z) { return 256 * Math.pow(2, z) / (2 * Math.PI); }
 
   function switchToMap() {
     if (mode === 'map') return;
-    mode = 'map';
-    globeAnimating = false;
-
-    const rot  = projection.rotate();
-    const lat  = -rot[1], lon = -rot[0];
-    const zoom = d3ScaleToLeafZoom(projection.scale());
-
-    leafMain.setView([lat, lon], zoom, { animate: false });
-    leafVid.setView( [lat, lon], zoom, { animate: false });
+    mode = 'map'; globeAnimating = false;
+    const rot = projection.rotate();
+    leafMap.setView([-rot[1], -rot[0]], d3ScaleToLeafZoom(projection.scale()), { animate: false });
     updateLeafletBox(currentCoords.lat, currentCoords.lon, false);
-
-    document.getElementById('leaf-main').classList.add('visible');
-    document.getElementById('leaf-vid').classList.add('visible');
+    document.getElementById('leaf-map').classList.add('visible');
     canvas.classList.add('hidden');
-
     document.getElementById('mode-badge').textContent = 'Map';
-    setTimeout(() => { leafMain.invalidateSize(); leafVid.invalidateSize(); }, 30);
+    setTimeout(() => leafMap.invalidateSize(), 30);
   }
 
   function switchToGlobe(fromLeaf) {
     if (mode === 'globe') return;
     mode = 'globe';
-
-    const center = fromLeaf.getCenter();
-    const scale  = leafZoomToD3Scale(fromLeaf.getZoom());
-    projection.rotate([-center.lng, -center.lat, 0]).scale(scale);
-
-    document.getElementById('leaf-main').classList.remove('visible');
-    document.getElementById('leaf-vid').classList.remove('visible');
+    const c = fromLeaf.getCenter();
+    projection.rotate([-c.lng, -c.lat, 0]).scale(leafZoomToD3Scale(fromLeaf.getZoom()));
+    document.getElementById('leaf-map').classList.remove('visible');
     canvas.classList.remove('hidden');
-
     document.getElementById('mode-badge').textContent = 'Globe';
-    const target = document.getElementById(activeTab === 'map' ? 'map-main' : 'map-vid');
-    target.appendChild(canvas);
     delete canvas._initScale;
     resizeGlobe();
   }
 
-  function setModeBadge() {
-    document.getElementById('mode-badge').textContent = mode === 'globe' ? 'Globe' : 'Map';
-  }
-
-  // ── Zoom buttons ───────────────────────────────────────────────────────────
   function mapZoomIn() {
     if (mode === 'globe') {
-      const newScale = projection.scale() * 1.4;
-      projection.scale(newScale);
-      if (newScale >= GLOBE_TO_MAP) switchToMap();
-      else draw();
-    } else {
-      leafMain.zoomIn(); leafVid.zoomIn();
-    }
+      const ns = projection.scale() * 1.4;
+      projection.scale(ns);
+      if (ns >= GLOBE_TO_MAP) switchToMap(); else draw();
+    } else { leafMap.zoomIn(); }
   }
   function mapZoomOut() {
-    if (mode === 'globe') {
-      projection.scale(Math.max(80, projection.scale() / 1.4));
-      draw();
+    if (mode === 'globe') { projection.scale(Math.max(80, projection.scale() / 1.4)); draw(); }
+    else { leafMap.zoomOut(); }
+  }
+
+  // ── Feed toggles ──────────────────────────────────────────────────────────
+  async function toggleADSB(enabled) {
+    adsbEnabled = enabled;
+    if (enabled) {
+      await fetch('/adsb/mode', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: true, lat: currentCoords.lat, lon: currentCoords.lon }),
+      });
+      pollADSB();
     } else {
-      leafMain.zoomOut(); leafVid.zoomOut();
+      await fetch('/adsb/mode', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: false }),
+      });
+      adsbFlights = []; adsbFollowIcao = null;
+      flightMarkers.forEach(m => flightLayer.removeLayer(m)); flightMarkers.clear();
+      document.getElementById('adsb-count').textContent = '—';
+      document.getElementById('adsb-count').className = 'feed-count';
+      document.getElementById('map-release-btn').style.display = 'none';
+      if (!marineFollowMmsi) document.getElementById('map-lock-label').textContent = '';
+      if (mode === 'globe') draw();
+    }
+  }
+
+  async function toggleMarine(enabled) {
+    marineEnabled = enabled;
+    if (enabled) {
+      await fetch('/marine/mode', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: true, lat: currentCoords.lat, lon: currentCoords.lon }),
+      });
+      pollMarine();
+    } else {
+      await fetch('/marine/mode', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: false }),
+      });
+      marineVessels = []; marineFollowMmsi = null;
+      vesselMarkers.forEach(m => vesselLayer.removeLayer(m)); vesselMarkers.clear();
+      document.getElementById('marine-count').textContent = '—';
+      document.getElementById('marine-count').className = 'feed-count';
+      document.getElementById('map-marine-release-btn').style.display = 'none';
+      if (!adsbFollowIcao) document.getElementById('map-lock-label').textContent = '';
+      if (mode === 'globe') draw();
     }
   }
 
   // ── ADS-B polling ─────────────────────────────────────────────────────────
   function updateFlightMarkers() {
     const seen = new Set(adsbFlights.map(f => f.icao24));
-    flightMarkers.forEach((pair, icao) => {
-      if (!seen.has(icao)) {
-        flightLayerMain.removeLayer(pair.main);
-        flightLayerVid.removeLayer(pair.vid);
-        flightMarkers.delete(icao);
-      }
-    });
+    flightMarkers.forEach((m, icao) => { if (!seen.has(icao)) { flightLayer.removeLayer(m); flightMarkers.delete(icao); } });
     adsbFlights.forEach(f => {
-      const locked = f.icao24 === adsbFollowIcao;
-      const icon   = makeFlightIcon(f.heading, locked);
-      if (flightMarkers.has(f.icao24)) {
-        const pair = flightMarkers.get(f.icao24);
-        pair.main.setLatLng([f.lat, f.lon]).setIcon(icon);
-        pair.vid.setLatLng([f.lat, f.lon]).setIcon(icon);
-      } else {
-        const mkMain = L.marker([f.lat, f.lon], { icon, interactive: false }).addTo(flightLayerMain);
-        const mkVid  = L.marker([f.lat, f.lon], { icon, interactive: false }).addTo(flightLayerVid);
-        flightMarkers.set(f.icao24, { main: mkMain, vid: mkVid });
-      }
+      const icon = makeFlightIcon(f.heading, f.icao24 === adsbFollowIcao);
+      if (flightMarkers.has(f.icao24)) flightMarkers.get(f.icao24).setLatLng([f.lat, f.lon]).setIcon(icon);
+      else flightMarkers.set(f.icao24, L.marker([f.lat, f.lon], { icon, interactive: false }).addTo(flightLayer));
     });
   }
 
   async function pollADSB() {
+    if (!adsbEnabled) return;
     try {
-      const res  = await fetch('/adsb/flights');
-      const data = await res.json();
-      if (!data.active) {
-        if (adsbFlights.length) {
-          adsbFlights = []; adsbFollowIcao = null;
-          flightMarkers.forEach(p => { flightLayerMain.removeLayer(p.main); flightLayerVid.removeLayer(p.vid); });
-          flightMarkers.clear();
-          if (mode === 'globe') draw();
-          document.getElementById('map-release-btn').style.display = 'none';
-          document.getElementById('map-lock-label').textContent = '';
-        }
-        return;
-      }
-
+      const data = await fetch('/adsb/flights').then(r => r.json());
       adsbFlights    = data.flights || [];
       adsbFollowIcao = data.follow_icao || null;
+
+      const n = adsbFlights.length;
+      const cEl = document.getElementById('adsb-count');
+      cEl.textContent = n;
+      cEl.className = n > 0 ? 'feed-count active-adsb' : 'feed-count';
 
       if (data.follow_icao && data.center) {
         const { lat, lon } = data.center;
         if (lat !== currentCoords.lat || lon !== currentCoords.lon) {
-          currentCoords = { lat, lon };
-          saveCoords(lat, lon);
+          currentCoords = { lat, lon }; saveCoords(lat, lon);
           currentGeoBox = boxGeoJSON(lat, lon);
-          if (mode === 'globe') draw();
-          else updateLeafletBox(lat, lon, false);
+          if (mode === 'globe') draw(); else updateLeafletBox(lat, lon);
         }
       }
 
@@ -650,65 +637,46 @@
 
       document.getElementById('map-release-btn').style.display = adsbFollowIcao ? '' : 'none';
       const f = adsbFlights.find(f => f.icao24 === adsbFollowIcao);
-      document.getElementById('map-lock-label').textContent = adsbFollowIcao
-        ? `LOCKED: ${adsbFollowIcao}${f?.callsign ? ' / ' + f.callsign : ''}`
-        : '';
-      document.getElementById('map-lock-label').style.color = '#4caf50';
+      const lbl = document.getElementById('map-lock-label');
+      if (adsbFollowIcao) {
+        lbl.textContent = `LOCKED: ${adsbFollowIcao}${f?.callsign ? ' / ' + f.callsign : ''}`;
+        lbl.style.color = '#4caf50';
+      } else if (!marineFollowMmsi) {
+        lbl.textContent = '';
+      }
     } catch (_) {}
   }
 
   // ── Marine polling ────────────────────────────────────────────────────────
   function updateVesselMarkers() {
     const seen = new Set(marineVessels.map(v => v.mmsi));
-    vesselMarkers.forEach((pair, mmsi) => {
-      if (!seen.has(mmsi)) {
-        vesselLayerMain.removeLayer(pair.main);
-        vesselLayerVid.removeLayer(pair.vid);
-        vesselMarkers.delete(mmsi);
-      }
-    });
+    vesselMarkers.forEach((m, mmsi) => { if (!seen.has(mmsi)) { vesselLayer.removeLayer(m); vesselMarkers.delete(mmsi); } });
     marineVessels.forEach(v => {
-      const locked = v.mmsi === marineFollowMmsi;
-      const hdg    = v.heading !== null && v.heading !== undefined ? v.heading : v.cog;
-      const icon   = makeVesselIcon(hdg, locked);
-      if (vesselMarkers.has(v.mmsi)) {
-        const pair = vesselMarkers.get(v.mmsi);
-        pair.main.setLatLng([v.lat, v.lon]).setIcon(icon);
-        pair.vid.setLatLng([v.lat, v.lon]).setIcon(icon);
-      } else {
-        const mkMain = L.marker([v.lat, v.lon], { icon, interactive: false }).addTo(vesselLayerMain);
-        const mkVid  = L.marker([v.lat, v.lon], { icon, interactive: false }).addTo(vesselLayerVid);
-        vesselMarkers.set(v.mmsi, { main: mkMain, vid: mkVid });
-      }
+      const hdg  = v.heading != null ? v.heading : v.cog;
+      const icon = makeVesselIcon(hdg, v.mmsi === marineFollowMmsi);
+      if (vesselMarkers.has(v.mmsi)) vesselMarkers.get(v.mmsi).setLatLng([v.lat, v.lon]).setIcon(icon);
+      else vesselMarkers.set(v.mmsi, L.marker([v.lat, v.lon], { icon, interactive: false }).addTo(vesselLayer));
     });
   }
 
   async function pollMarine() {
+    if (!marineEnabled) return;
     try {
-      const res  = await fetch('/marine/vessels');
-      const data = await res.json();
-      if (!data.active) {
-        if (marineVessels.length) {
-          marineVessels = []; marineFollowMmsi = null;
-          vesselMarkers.forEach(p => { vesselLayerMain.removeLayer(p.main); vesselLayerVid.removeLayer(p.vid); });
-          vesselMarkers.clear();
-          if (mode === 'globe') draw();
-        }
-        document.getElementById('map-marine-release-btn').style.display = 'none';
-        return;
-      }
-
+      const data = await fetch('/marine/vessels').then(r => r.json());
       marineVessels    = data.vessels || [];
       marineFollowMmsi = data.follow_mmsi || null;
+
+      const n = marineVessels.length;
+      const cEl = document.getElementById('marine-count');
+      cEl.textContent = n;
+      cEl.className = n > 0 ? 'feed-count active-marine' : 'feed-count';
 
       if (data.follow_mmsi && data.center) {
         const { lat, lon } = data.center;
         if (lat !== currentCoords.lat || lon !== currentCoords.lon) {
-          currentCoords = { lat, lon };
-          saveCoords(lat, lon);
+          currentCoords = { lat, lon }; saveCoords(lat, lon);
           currentGeoBox = boxGeoJSON(lat, lon);
-          if (mode === 'globe') draw();
-          else updateLeafletBox(lat, lon, false);
+          if (mode === 'globe') draw(); else updateLeafletBox(lat, lon);
         }
       }
 
@@ -717,26 +685,28 @@
 
       document.getElementById('map-marine-release-btn').style.display = marineFollowMmsi ? '' : 'none';
       const v = marineVessels.find(v => v.mmsi === marineFollowMmsi);
-      document.getElementById('map-lock-label').textContent = marineFollowMmsi
-        ? `LOCKED: ${marineFollowMmsi}${v?.name ? ' / ' + v.name : ''}`
-        : '';
-      document.getElementById('map-lock-label').style.color = '#ff9800';
+      const lbl = document.getElementById('map-lock-label');
+      if (marineFollowMmsi) {
+        lbl.textContent = `LOCKED: ${marineFollowMmsi}${v?.name ? ' / ' + v.name : ''}`;
+        lbl.style.color = '#ff9800';
+      } else if (!adsbFollowIcao) {
+        lbl.textContent = '';
+      }
     } catch (_) {}
   }
 
-  setInterval(pollADSB, 5000);
+  setInterval(pollADSB,   5000);
   setInterval(pollMarine, 5000);
 
   // ── Coord management ──────────────────────────────────────────────────────
   function loadCoords() {
-    try { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (s?.lat && s?.lon) return s; }
-    catch (_) {}
+    try { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (s?.lat && s?.lon) return s; } catch (_) {}
     return { ...GLENDALE };
   }
   function saveCoords(lat, lon) { localStorage.setItem(STORAGE_KEY, JSON.stringify({ lat, lon })); }
   function updateDisplay(lat, lon) {
     document.getElementById('coord-display').textContent =
-      `${lat.toFixed(4)}° N, ${Math.abs(lon).toFixed(4)}° ${lon < 0 ? 'W' : 'E'}`;
+      `${lat.toFixed(4)}° N, ${Math.abs(lon).toFixed(4)}° ${lon < 0 ? 'W' : 'E'}`;
   }
 
   function applyCoords() {
@@ -746,33 +716,26 @@
     currentCoords = { lat, lon };
     saveCoords(lat, lon); updateDisplay(lat, lon);
     currentGeoBox = boxGeoJSON(lat, lon);
-    if (mode === 'globe') {
-      flyTo(lat, lon);
-    } else {
-      leafMain.setView([lat, lon], leafMain.getZoom());
-      leafVid.setView( [lat, lon], leafVid.getZoom());
-      updateLeafletBox(lat, lon, false);
-    }
+    if (mode === 'globe') flyTo(lat, lon);
+    else { leafMap.setView([lat, lon], leafMap.getZoom()); updateLeafletBox(lat, lon); }
   }
 
-  // ── Tab switching ─────────────────────────────────────────────────────────
-  function switchTab(name, evt) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    evt.target.classList.add('active');
-    activeTab = name;
-    if (mode === 'globe') {
-      const target = document.getElementById(name === 'map' ? 'map-main' : 'map-vid');
-      target.appendChild(canvas);
-      delete canvas._initScale;
-      setTimeout(resizeGlobe, 10);
-    } else {
-      setTimeout(() => {
-        if (name === 'map') leafMain.invalidateSize();
-        else                leafVid.invalidateSize();
-      }, 30);
-    }
+  // ── Release handlers ──────────────────────────────────────────────────────
+  async function mapReleaseFollow() {
+    await fetch('/adsb/follow', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ icao24: null }) });
+    adsbFollowIcao = null;
+    document.getElementById('map-release-btn').style.display = 'none';
+    if (!marineFollowMmsi) document.getElementById('map-lock-label').textContent = '';
+    updateFlightMarkers();
+  }
+
+  async function mapMarineReleaseFollow() {
+    await fetch('/marine/follow', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mmsi: null }) });
+    marineFollowMmsi = null;
+    document.getElementById('map-marine-release-btn').style.display = 'none';
+    if (!adsbFollowIcao) document.getElementById('map-lock-label').textContent = '';
+    updateVesselMarkers();
+    if (mode === 'globe') draw();
   }
 
   // ── Cross-window coord sync ───────────────────────────────────────────────
@@ -784,39 +747,13 @@
     document.getElementById('inp-lon').value = lon;
     updateDisplay(lat, lon);
     currentGeoBox = boxGeoJSON(lat, lon);
-    if (mode === 'globe') draw();
-    else updateLeafletBox(lat, lon, false);
+    if (mode === 'globe') draw(); else updateLeafletBox(lat, lon);
   });
-
-  // ── Release handlers ──────────────────────────────────────────────────────
-  async function mapReleaseFollow() {
-    await fetch('/adsb/follow', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ icao24: null }),
-    });
-    adsbFollowIcao = null;
-    document.getElementById('map-release-btn').style.display = 'none';
-    document.getElementById('map-lock-label').textContent = '';
-    updateFlightMarkers();
-  }
-
-  async function mapMarineReleaseFollow() {
-    await fetch('/marine/follow', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mmsi: null }),
-    });
-    marineFollowMmsi = null;
-    document.getElementById('map-marine-release-btn').style.display = 'none';
-    document.getElementById('map-lock-label').textContent = '';
-    updateVesselMarkers();
-    if (mode === 'globe') draw();
-  }
 
   // ── Init ──────────────────────────────────────────────────────────────────
   document.getElementById('inp-lat').value = currentCoords.lat;
   document.getElementById('inp-lon').value = currentCoords.lon;
   updateDisplay(currentCoords.lat, currentCoords.lon);
-  document.getElementById('map-vid').appendChild(canvas);
   window.addEventListener('resize', resizeGlobe);
   resizeGlobe();
 
